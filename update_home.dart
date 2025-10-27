@@ -332,7 +332,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 // ==================== HOME SCREEN ====================
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -344,7 +344,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 class HomeScreenContent extends StatefulWidget {
-  const HomeScreenContent({Key? key}) : super(key: key);
+  const HomeScreenContent({super.key});
 
   @override
   State<HomeScreenContent> createState() => _HomeScreenContentState();
@@ -465,7 +465,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                           Text(
                             'Ready to hustle today?',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 16,
                             ),
                           ),
@@ -483,7 +483,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                           color: const Color(0xFF1A1A1A),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFFFFD700).withOpacity(0.3),
+                            color: const Color(
+                              0xFFFFD700,
+                            ).withValues(alpha: 0.3),
                           ),
                         ),
                         child: TextField(
@@ -492,7 +494,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                           decoration: InputDecoration(
                             hintText: 'Search jobs...',
                             hintStyle: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
+                              color: Colors.white.withValues(alpha: 0.5),
                             ),
                             prefixIcon: const Icon(
                               Icons.search,
@@ -561,7 +563,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                                 side: BorderSide(
                                   color: isSelected
                                       ? const Color(0xFFFFD700)
-                                      : Colors.white.withOpacity(0.3),
+                                      : Colors.white.withValues(alpha: 0.3),
                                 ),
                               ),
                             );
@@ -625,7 +627,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                           Text(
                             '${state.displayedJobs.length} available',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
+                              color: Colors.white.withValues(alpha: 0.6),
                               fontSize: 14,
                             ),
                           ),
@@ -663,7 +665,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
 class JobCard extends StatelessWidget {
   final Job job;
 
-  const JobCard({Key? key, required this.job}) : super(key: key);
+  const JobCard({super.key, required this.job});
 
   @override
   Widget build(BuildContext context) {
@@ -672,7 +674,7 @@ class JobCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFF1A1A1A),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -712,7 +714,7 @@ class JobCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFD700).withOpacity(0.2),
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -730,7 +732,7 @@ class JobCard extends StatelessWidget {
                 Text(
                   job.description,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                     fontSize: 14,
                   ),
                   maxLines: 2,
@@ -741,28 +743,28 @@ class JobCard extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.location_on_outlined,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       size: 16,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       job.location,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12,
                       ),
                     ),
                     const SizedBox(width: 16),
                     Icon(
                       Icons.access_time,
-                      color: Colors.white.withOpacity(0.5),
+                      color: Colors.white.withValues(alpha: 0.5),
                       size: 16,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       _getTimeAgo(job.createdAt),
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
+                        color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 12,
                       ),
                     ),

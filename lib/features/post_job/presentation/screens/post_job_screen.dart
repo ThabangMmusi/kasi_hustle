@@ -290,10 +290,14 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFD700).withOpacity(0.1),
+                            color: const Color(
+                              0xFFFFD700,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFFFFD700).withOpacity(0.3),
+                              color: const Color(
+                                0xFFFFD700,
+                              ).withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -308,7 +312,7 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
                                 child: Text(
                                   'Post your job and connect with skilled hustlers in your area!',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.9),
+                                    color: Colors.white.withValues(alpha: 0.9),
                                     fontSize: 14,
                                   ),
                                 ),
@@ -408,8 +412,10 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: _location != null
-                                  ? const Color(0xFFFFD700).withOpacity(0.5)
-                                  : Colors.white.withOpacity(0.3),
+                                  ? const Color(
+                                      0xFFFFD700,
+                                    ).withValues(alpha: 0.5)
+                                  : Colors.white.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Column(
@@ -421,7 +427,7 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
                                     Icons.location_on,
                                     color: _location != null
                                         ? const Color(0xFFFFD700)
-                                        : Colors.white.withOpacity(0.5),
+                                        : Colors.white.withValues(alpha: 0.5),
                                     size: 20,
                                   ),
                                   const SizedBox(width: 8),
@@ -431,7 +437,9 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
                                       style: TextStyle(
                                         color: _location != null
                                             ? Colors.white
-                                            : Colors.white.withOpacity(0.5),
+                                            : Colors.white.withValues(
+                                                alpha: 0.5,
+                                              ),
                                         fontSize: 14,
                                       ),
                                     ),
@@ -490,7 +498,7 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
                             color: const Color(0xFF1A1A1A),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                             ),
                           ),
                           child: Column(
@@ -499,7 +507,7 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
                               Text(
                                 'Select skills needed for this job:',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
+                                  color: Colors.white.withValues(alpha: 0.7),
                                   fontSize: 12,
                                 ),
                               ),
@@ -537,7 +545,7 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
                                     side: BorderSide(
                                       color: isSelected
                                           ? const Color(0xFFFFD700)
-                                          : Colors.white.withOpacity(0.3),
+                                          : Colors.white.withValues(alpha: 0.3),
                                     ),
                                   );
                                 }).toList(),
@@ -578,8 +586,8 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFFD700),
                               foregroundColor: Colors.black,
-                              disabledBackgroundColor: Colors.grey.withOpacity(
-                                0.3,
+                              disabledBackgroundColor: Colors.grey.withValues(
+                                alpha: 0.3,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -665,7 +673,7 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
       prefixIcon: Icon(icon, color: const Color(0xFFFFD700)),
       prefixText: prefix,
       prefixStyle: const TextStyle(
@@ -676,11 +684,11 @@ class _CreateJobScreenContentState extends State<CreateJobScreenContent> {
       fillColor: const Color(0xFF1A1A1A),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

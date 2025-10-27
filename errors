@@ -1,0 +1,186 @@
+
+════════ Exception caught by widgets library ═══════════════════════════════════
+The following assertion was thrown while applying parent data.:
+Incorrect use of ParentDataWidget.
+The ParentDataWidget Expanded(flex: 1) wants to apply ParentData of type FlexParentData to a RenderObject, which has been set up to accept ParentData of incompatible type BoxParentData.
+Usually, this means that the Expanded widget has the wrong ancestor RenderObjectWidget. Typically, Expanded widgets are placed directly inside Flex widgets.
+The offending Expanded is currently placed inside a Padding widget.
+The ownership chain for the RenderObject that received the incompatible parent data was:
+  Column ← Expanded ← Padding ← BlocListener<OnboardingBloc, OnboardingState> ← BlocBuilder<OnboardingBloc, OnboardingState> ← _SelectUserTypeStep ← Expanded ← Column ← MediaQuery ← Padding ← ⋯
+
+When the exception was thrown, this was the stack:
+#0      RenderObjectElement._updateParentData.<anonymous closure> (package:flutter/src/widgets/framework.dart:6785:11)
+framework.dart:6785
+#1      RenderObjectElement._updateParentData (package:flutter/src/widgets/framework.dart:6802:6)
+framework.dart:6802
+#2      RenderObjectElement.attachRenderObject (package:flutter/src/widgets/framework.dart:6848:7)
+framework.dart:6848
+#3      RenderObjectElement.mount (package:flutter/src/widgets/framework.dart:6706:5)
+framework.dart:6706
+#4      MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7176:11)
+framework.dart:7176
+...     Normal element mounting (18 frames)
+#22     SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+nested.dart:222
+...     Normal element mounting (21 frames)
+#43     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4548:16)
+framework.dart:4548
+#44     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7169:36)
+framework.dart:7169
+#45     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7185:32)
+framework.dart:7185
+...     Normal element mounting (24 frames)
+#69     SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+nested.dart:222
+...     Normal element mounting (41 frames)
+#110    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4548:16)
+framework.dart:4548
+#111    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7169:36)
+framework.dart:7169
+#112    MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7185:32)
+framework.dart:7185
+...     Normal element mounting (127 frames)
+#239    _InheritedProviderScopeElement.mount (package:provider/src/inherited_provider.dart:424:11)
+inherited_provider.dart:424
+...     Normal element mounting (7 frames)
+#246    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+nested.dart:222
+...     Normal element mounting (7 frames)
+#253    SingleChildWidgetElementMixin.mount (package:nested/nested.dart:222:11)
+nested.dart:222
+...     Normal element mounting (234 frames)
+#487    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4548:16)
+framework.dart:4548
+#488    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7169:36)
+framework.dart:7169
+#489    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
+framework.dart:4004
+#490    Element.updateChildren (package:flutter/src/widgets/framework.dart:4203:32)
+framework.dart:4203
+#491    MultiChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7202:17)
+framework.dart:7202
+#492    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#493    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#494    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+framework.dart:5884
+#495    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#496    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
+framework.dart:5909
+#497    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#498    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#499    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#500    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+framework.dart:6051
+#501    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#502    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#503    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#504    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+framework.dart:6051
+#505    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+inherited_notifier.dart:108
+#506    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#507    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#508    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+framework.dart:5884
+#509    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#510    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
+framework.dart:5909
+#511    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#512    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#513    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#514    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+framework.dart:6051
+#515    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
+inherited_notifier.dart:108
+#516    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#517    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#518    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+framework.dart:5884
+#519    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#520    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
+framework.dart:5909
+#521    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#522    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#523    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+framework.dart:5884
+#524    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#525    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
+framework.dart:5909
+#526    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#527    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7025:14)
+framework.dart:7025
+#528    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#529    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7025:14)
+framework.dart:7025
+#530    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#531    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#532    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#533    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+framework.dart:6051
+#534    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#535    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#536    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#537    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
+framework.dart:6051
+#538    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
+framework.dart:3982
+#539    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
+framework.dart:5747
+#540    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
+framework.dart:5884
+#541    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
+framework.dart:5435
+#542    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2695:15)
+framework.dart:2695
+#543    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2752:11)
+framework.dart:2752
+#544    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3056:18)
+framework.dart:3056
+#545    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1259:21)
+binding.dart:1259
+#546    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
+binding.dart:495
+#547    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
+binding.dart:1434
+#548    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1347:9)
+binding.dart:1347
+#549    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1200:5)
+binding.dart:1200
+#550    _invoke (dart:ui/hooks.dart:330:13)
+hooks.dart:330
+#551    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
+platform_dispatcher.dart:444
+#552    _drawFrame (dart:ui/hooks.dart:302:31)
+hooks.dart:302
+════════════════════════════════════════════════════════════════════════════════
+W/WindowOnBackDispatcher( 9129): OnBackInvokedCallback is not enabled for the application.
+W/WindowOnBackDispatcher( 9129): Set 'android:enableOnBackInvokedCallback="true"' in the application manifest.

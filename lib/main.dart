@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kasi_hustle/core/theme/app_theme.dart';
 import 'package:kasi_hustle/features/auth/presentation/login_screen.dart';
+import 'package:kasi_hustle/features/auth/presentation/login_screen_updated.dart';
 import 'package:kasi_hustle/main_layout.dart';
 
 void main() {
@@ -7,17 +9,17 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Kasi Hustle',
-      theme: ThemeData(
-        primarySwatch: Colors.yellow,
-        scaffoldBackgroundColor: Colors.black,
-        brightness: Brightness.dark,
-      ),
+      theme: KasiTheme.lightTheme(),
+      // darkTheme: KasiTheme.darkTheme(),
+      // themeMode: ThemeMode.light,
+      // themeMode: ThemeMode.system,
+      // home: const MainLayout(),
       home: const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );

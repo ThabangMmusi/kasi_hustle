@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:kasi_hustle/core/theme/styles.dart';
+
 import 'package:kasi_hustle/features/applications/presentation/screens/applications_screen.dart';
+
 import 'package:kasi_hustle/features/home/presentation/screens/home_screen.dart';
 import 'package:kasi_hustle/features/post_job/presentation/screens/post_job_screen.dart';
 import 'package:kasi_hustle/features/profile/presentation/screens/profile_screen.dart';
+import 'package:kasi_hustle/features/search/presentation/screens/search_screen.dart';
+import 'package:kasi_hustle/features/business_home/presentation/screens/business_home_screen.dart';
 
 // ==================== MAIN LAYOUT WITH BOTTOM NAV ====================
 
 class MainLayout extends StatefulWidget {
-  const MainLayout({Key? key}) : super(key: key);
+  const MainLayout({super.key, this.isHustler = true});
+  final bool isHustler;
 
   @override
   State<MainLayout> createState() => _MainLayoutState();
@@ -16,61 +23,106 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _currentIndex = 0;
 
-  // Your actual screen widgets go here
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const CreateJobScreen(),
-    const ApplicationsScreen(),
-    const ProfileScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  void changeTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = widget.isHustler
+        ? [
+            HomeScreen(onSearchTap: () => changeTab(1)),
+            const SearchScreen(),
+            const ApplicationsScreen(),
+            const ProfileScreen(),
+          ]
+        : [
+            const BusinessHomeScreen(),
+            const CreateJobScreen(),
+            const ApplicationsScreen(),
+            const ProfileScreen(),
+          ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: colorScheme.surface,
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFFD700).withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
+          color: colorScheme.surface,
+          boxShadow: Shadows.universal,
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: Insets.sm,
+              vertical: Insets.sm,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(
-                  icon: Icons.home_outlined,
-                  selectedIcon: Icons.home,
-                  label: 'Home',
-                  index: 0,
-                ),
-                _buildNavItem(
-                  icon: Icons.add_circle_outline,
-                  selectedIcon: Icons.add_circle,
-                  label: 'Post Job',
-                  index: 1,
-                ),
-                _buildNavItem(
-                  icon: Icons.work_outline,
-                  selectedIcon: Icons.work,
-                  label: 'My Jobs',
-                  index: 2,
-                ),
-                _buildNavItem(
-                  icon: Icons.person_outline,
-                  selectedIcon: Icons.person,
-                  label: 'Profile',
-                  index: 3,
-                ),
-              ],
+              children: widget.isHustler
+                  ? [
+                      _buildNavItem(
+                        icon: Ionicons.home_outline,
+                        selectedIcon: Ionicons.home,
+                        label: 'Home',
+                        index: 0,
+                      ),
+                      _buildNavItem(
+                        icon: Ionicons.search_outline,
+                        selectedIcon: Ionicons.search,
+                        label: 'Search',
+                        index: 1,
+                      ),
+                      _buildNavItem(
+                        icon: Ionicons.briefcase_outline,
+                        selectedIcon: Ionicons.briefcase,
+                        label: 'Applications',
+                        index: 2,
+                      ),
+                      _buildNavItem(
+                        icon: Ionicons.person_outline,
+                        selectedIcon: Ionicons.person,
+                        label: 'Profile',
+                        index: 3,
+                      ),
+                    ]
+                  : [
+                      _buildNavItem(
+                        icon: Ionicons.home_outline,
+                        selectedIcon: Ionicons.home,
+                        label: 'Home',
+                        index: 0,
+                      ),
+                      _buildNavItem(
+                        icon: Ionicons.add_circle_outline,
+                        selectedIcon: Ionicons.add_circle,
+                        label: 'Post Job',
+                        index: 1,
+                      ),
+                      _buildNavItem(
+                        icon: Ionicons.briefcase_outline,
+                        selectedIcon: Ionicons.briefcase,
+                        label: 'Applicants',
+                        index: 2,
+                      ),
+                      _buildNavItem(
+                        icon: Ionicons.person_outline,
+                        selectedIcon: Ionicons.person,
+                        label: 'Profile',
+                        index: 3,
+                      ),
+                    ],
             ),
           ),
         ),
@@ -85,6 +137,8 @@ class _MainLayoutState extends State<MainLayout> {
     required int index,
   }) {
     final isSelected = _currentIndex == index;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Expanded(
       child: Material(
@@ -95,42 +149,31 @@ class _MainLayoutState extends State<MainLayout> {
               _currentIndex = index;
             });
           },
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: Corners.medBorder,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: EdgeInsets.symmetric(vertical: Insets.sm),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   isSelected ? selectedIcon : icon,
                   color: isSelected
-                      ? const Color(0xFFFFD700)
-                      : Colors.white.withOpacity(0.6),
-                  size: 26,
+                      ? colorScheme.primary
+                      : colorScheme.onSurface.withValues(alpha: 0.6),
+                  size: IconSizes.med,
                 ),
-                const SizedBox(height: 4),
+                VSpace.xs,
                 Text(
                   label,
-                  style: TextStyle(
+                  style: TextStyles.labelSmall.copyWith(
                     color: isSelected
-                        ? const Color(0xFFFFD700)
-                        : Colors.white.withOpacity(0.6),
-                    fontSize: 12,
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.6),
                     fontWeight: isSelected
                         ? FontWeight.bold
                         : FontWeight.normal,
                   ),
                 ),
-                if (isSelected)
-                  Container(
-                    margin: const EdgeInsets.only(top: 4),
-                    height: 3,
-                    width: 20,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD700),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
               ],
             ),
           ),

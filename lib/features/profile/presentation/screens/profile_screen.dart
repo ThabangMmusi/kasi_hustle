@@ -1,234 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ionicons/ionicons.dart';
+import 'package:kasi_hustle/core/theme/app_theme.dart';
+import 'package:kasi_hustle/core/theme/styles.dart';
 
-// ==================== MODELS ====================
-
-class UserProfile {
-  final String id;
-  final String name;
-  final String email;
-  final String? phone;
-  final List<String> skills;
-  final String? bio;
-  final String? profileImage;
-  final double rating;
-  final int totalReviews;
-  final bool isVerified;
-  final String userType; // 'hustler' or 'job_provider'
-  final DateTime createdAt;
-  final int completedJobs;
-
-  UserProfile({
-    required this.id,
-    required this.name,
-    required this.email,
-    this.phone,
-    required this.skills,
-    this.bio,
-    this.profileImage,
-    required this.rating,
-    required this.totalReviews,
-    required this.isVerified,
-    required this.userType,
-    required this.createdAt,
-    required this.completedJobs,
-  });
-
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
-      id: json['id'],
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      phone: json['phone'],
-      skills: List<String>.from(json['skills'] ?? []),
-      bio: json['bio'],
-      profileImage: json['profile_image'],
-      rating: json['rating']?.toDouble() ?? 0.0,
-      totalReviews: json['total_reviews'] ?? 0,
-      isVerified: json['is_verified'] ?? false,
-      userType: json['user_type'] ?? 'hustler',
-      createdAt: DateTime.parse(
-        json['created_at'] ?? DateTime.now().toIso8601String(),
-      ),
-      completedJobs: json['completed_jobs'] ?? 0,
-    );
-  }
-
-  UserProfile copyWith({
-    String? name,
-    String? phone,
-    List<String>? skills,
-    String? bio,
-    String? profileImage,
-  }) {
-    return UserProfile(
-      id: id,
-      name: name ?? this.name,
-      email: email,
-      phone: phone ?? this.phone,
-      skills: skills ?? this.skills,
-      bio: bio ?? this.bio,
-      profileImage: profileImage ?? this.profileImage,
-      rating: rating,
-      totalReviews: totalReviews,
-      isVerified: isVerified,
-      userType: userType,
-      createdAt: createdAt,
-      completedJobs: completedJobs,
-    );
-  }
-}
-
-// ==================== BLOC EVENTS ====================
-
-abstract class ProfileEvent {}
-
-class LoadProfile extends ProfileEvent {}
-
-class UpdateProfile extends ProfileEvent {
-  final String name;
-  final String? phone;
-  final List<String> skills;
-  final String? bio;
-
-  UpdateProfile({
-    required this.name,
-    this.phone,
-    required this.skills,
-    this.bio,
-  });
-}
-
-class UploadProfileImage extends ProfileEvent {
-  final String imagePath;
-  UploadProfileImage(this.imagePath);
-}
-
-// ==================== BLOC STATES ====================
-
-abstract class ProfileState {}
-
-class ProfileInitial extends ProfileState {}
-
-class ProfileLoading extends ProfileState {}
-
-class ProfileLoaded extends ProfileState {
-  final UserProfile profile;
-  final bool isEditing;
-
-  ProfileLoaded({required this.profile, this.isEditing = false});
-
-  ProfileLoaded copyWith({UserProfile? profile, bool? isEditing}) {
-    return ProfileLoaded(
-      profile: profile ?? this.profile,
-      isEditing: isEditing ?? this.isEditing,
-    );
-  }
-}
-
-class ProfileUpdating extends ProfileState {
-  final UserProfile profile;
-  ProfileUpdating(this.profile);
-}
-
-class ProfileError extends ProfileState {
-  final String message;
-  ProfileError(this.message);
-}
-
-// ==================== BLOC ====================
-
-class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  ProfileBloc() : super(ProfileInitial()) {
-    on<LoadProfile>(_onLoadProfile);
-    on<UpdateProfile>(_onUpdateProfile);
-    on<UploadProfileImage>(_onUploadProfileImage);
-  }
-
-  Future<void> _onLoadProfile(
-    LoadProfile event,
-    Emitter<ProfileState> emit,
-  ) async {
-    emit(ProfileLoading());
-    try {
-      // Simulate fetching from Supabase
-      await Future.delayed(const Duration(seconds: 1));
-
-      final profile = UserProfile(
-        id: '1',
-        name: 'Thabo Mkhize',
-        email: 'thabo.mkhize@example.com',
-        phone: '+27 82 456 7890',
-        skills: ['Plumbing', 'Electrical', 'Carpentry'],
-        bio:
-            'Experienced handyman with 5+ years in the trade. Available for quick jobs around Soweto. Quality work guaranteed!',
-        profileImage: null,
-        rating: 4.7,
-        totalReviews: 23,
-        isVerified: true,
-        userType: 'hustler',
-        createdAt: DateTime.now().subtract(const Duration(days: 180)),
-        completedJobs: 47,
-      );
-
-      emit(ProfileLoaded(profile: profile));
-    } catch (e) {
-      emit(ProfileError('Failed to load profile: $e'));
-    }
-  }
-
-  Future<void> _onUpdateProfile(
-    UpdateProfile event,
-    Emitter<ProfileState> emit,
-  ) async {
-    if (state is ProfileLoaded) {
-      final currentState = state as ProfileLoaded;
-      emit(ProfileUpdating(currentState.profile));
-
-      try {
-        await Future.delayed(const Duration(seconds: 1));
-
-        final updatedProfile = currentState.profile.copyWith(
-          name: event.name,
-          phone: event.phone,
-          skills: event.skills,
-          bio: event.bio,
-        );
-
-        emit(ProfileLoaded(profile: updatedProfile, isEditing: false));
-      } catch (e) {
-        emit(ProfileError('Failed to update profile: $e'));
-      }
-    }
-  }
-
-  Future<void> _onUploadProfileImage(
-    UploadProfileImage event,
-    Emitter<ProfileState> emit,
-  ) async {
-    if (state is ProfileLoaded) {
-      final currentState = state as ProfileLoaded;
-      emit(ProfileUpdating(currentState.profile));
-
-      try {
-        await Future.delayed(const Duration(seconds: 1));
-
-        final updatedProfile = currentState.profile.copyWith(
-          profileImage: event.imagePath,
-        );
-
-        emit(ProfileLoaded(profile: updatedProfile));
-      } catch (e) {
-        emit(ProfileError('Failed to upload image: $e'));
-      }
-    }
-  }
-}
-
-// ==================== PROFILE SCREEN ====================
+import 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart';
+import 'package:kasi_hustle/core/widgets/buttons/text_btn.dart';
+import 'package:kasi_hustle/core/widgets/styled_load_spinner.dart';
+import 'package:kasi_hustle/core/widgets/styled_text_input.dart';
+import 'package:kasi_hustle/core/widgets/ui_text.dart';
+import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
+import 'package:kasi_hustle/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:kasi_hustle/features/profile/presentation/bloc/profile_event.dart';
+import 'package:kasi_hustle/features/profile/presentation/bloc/profile_state.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -240,42 +28,54 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class ProfileScreenContent extends StatelessWidget {
-  const ProfileScreenContent({Key? key}) : super(key: key);
+  const ProfileScreenContent({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: theme.colorScheme.surface,
+        systemNavigationBarIconBrightness: theme.brightness == Brightness.dark
+            ? Brightness.light
+            : Brightness.dark,
+      ),
+    );
+
     return Scaffold(
-      backgroundColor: Colors.black,
       body: BlocBuilder<ProfileBloc, ProfileState>(
         builder: (context, state) {
           if (state is ProfileLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFFFFD700)),
-            );
+            return const Center(child: StyledLoadSpinner());
           }
-
           if (state is ProfileError) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                  const SizedBox(height: 16),
-                  Text(
-                    state.message,
-                    style: const TextStyle(color: Colors.white),
+                  Icon(
+                    Ionicons.alert_circle_outline,
+                    color: colorScheme.error,
+                    size: IconSizes.xl,
+                  ),
+                  VSpace.lg,
+                  UiText(
+                    text: state.message,
+                    style: TextStyles.bodyLarge.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
+                  VSpace.lg,
+                  PrimaryBtn(
                     onPressed: () {
                       context.read<ProfileBloc>().add(LoadProfile());
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD700),
-                      foregroundColor: Colors.black,
-                    ),
-                    child: const Text('Retry'),
+                    label: 'Retry',
                   ),
                 ],
               ),
@@ -290,367 +90,342 @@ class ProfileScreenContent extends StatelessWidget {
 
             return Stack(
               children: [
-                CustomScrollView(
-                  slivers: [
-                    // App Bar
-                    SliverAppBar(
-                      expandedHeight: 100,
-                      floating: false,
-                      pinned: true,
-                      backgroundColor: Colors.black,
-                      elevation: 0,
-                      title: const Text(
-                        'Profile',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      actions: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.settings_outlined,
-                            color: Colors.white,
-                          ),
-                          onPressed: () {
-                            // Navigate to settings
-                          },
-                        ),
-                      ],
-                    ),
-
-                    // Profile Content
-                    SliverToBoxAdapter(
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 20),
-
-                          // Profile Picture & Verified Badge
-                          Stack(
-                            children: [
-                              Container(
-                                width: 120,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFFFFD700),
-                                      Color(0xFFFFA500),
-                                    ],
-                                  ),
-                                  border: Border.all(
-                                    color: const Color(0xFFFFD700),
-                                    width: 3,
-                                  ),
-                                ),
-                                child: profile.profileImage != null
-                                    ? ClipOval(
-                                        child: Image.network(
-                                          profile.profileImage!,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : const Icon(
-                                        Icons.person,
-                                        size: 60,
-                                        color: Colors.black,
-                                      ),
-                              ),
-                              if (profile.isVerified)
-                                Positioned(
-                                  bottom: 5,
-                                  right: 5,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF00D26A),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    // Trigger image upload
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Upload image functionality',
-                                        ),
-                                        backgroundColor: Color(0xFFFFD700),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFFFD700),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.camera_alt,
-                                      color: Colors.black,
-                                      size: 18,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Name & Verified Badge
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                profile.name,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              if (profile.isVerified) ...[
-                                const SizedBox(width: 8),
-                                const Icon(
-                                  Icons.verified,
-                                  color: Color(0xFF00D26A),
-                                  size: 24,
-                                ),
-                              ],
-                            ],
-                          ),
-
-                          const SizedBox(height: 4),
-
-                          // User Type Badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFD700).withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: const Color(0xFFFFD700),
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                Container(
+                  color: AppColors.darkSurface,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(Insets.lg),
+                        child: Column(
+                          children: [
+                            VSpace.xxl,
+                            Stack(
                               children: [
-                                const Icon(
-                                  Icons.construction,
-                                  color: Color(0xFFFFD700),
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  profile.userType == 'hustler'
-                                      ? 'Hustler'
-                                      : 'Job Provider',
-                                  style: const TextStyle(
-                                    color: Color(0xFFFFD700),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 20),
-
-                          // Stats Row
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 32.0,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _buildStatCard(
-                                  icon: Icons.star,
-                                  value: profile.rating.toStringAsFixed(1),
-                                  label: 'Rating',
-                                ),
-                                _buildStatCard(
-                                  icon: Icons.rate_review,
-                                  value: '${profile.totalReviews}',
-                                  label: 'Reviews',
-                                ),
-                                _buildStatCard(
-                                  icon: Icons.work,
-                                  value: '${profile.completedJobs}',
-                                  label: 'Jobs Done',
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Contact Details Section
-                          _buildSectionTitle('Contact Details'),
-                          _buildInfoCard(
-                            icon: Icons.email_outlined,
-                            label: 'Email',
-                            value: profile.email,
-                          ),
-                          _buildInfoCard(
-                            icon: Icons.phone_outlined,
-                            label: 'Phone',
-                            value: profile.phone ?? 'Not provided',
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Bio Section
-                          _buildSectionTitle('About Me'),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                            ),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1A1A1A),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.white.withOpacity(0.1),
-                                ),
-                              ),
-                              child: Text(
-                                profile.bio ?? 'No bio added yet',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontSize: 14,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Skills Section
-                          _buildSectionTitle('My Skills'),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                            ),
-                            child: Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: profile.skills.map((skill) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 10,
-                                  ),
+                                Container(
+                                  width: 120,
+                                  height: 120,
                                   decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFFFFD700,
-                                    ).withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(20),
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        colorScheme.primary,
+                                        colorScheme.primaryContainer,
+                                      ],
+                                    ),
                                     border: Border.all(
-                                      color: const Color(0xFFFFD700),
+                                      color: colorScheme.primary,
+                                      width: 3,
                                     ),
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.check_circle,
-                                        color: Color(0xFFFFD700),
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        skill,
-                                        style: const TextStyle(
-                                          color: Color(0xFFFFD700),
-                                          fontWeight: FontWeight.bold,
+                                  child: profile.profileImage != null
+                                      ? ClipOval(
+                                          child: Image.network(
+                                            profile.profileImage!,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        )
+                                      : Icon(
+                                          Ionicons.person,
+                                          size: 60,
+                                          color: colorScheme.onPrimary,
                                         ),
+                                ),
+                                if (profile.isVerified)
+                                  Positioned(
+                                    bottom: 5,
+                                    right: 5,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.secondary,
+                                        shape: BoxShape.circle,
                                       ),
-                                    ],
+                                      child: Icon(
+                                        Ionicons.checkmark_done,
+                                        color: colorScheme.onSecondary,
+                                        size: 20,
+                                      ),
+                                    ),
                                   ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Member Since
-                          Text(
-                            'Member since ${_formatDate(profile.createdAt)}',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.5),
-                              fontSize: 12,
-                            ),
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          // Edit Profile Button
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                            ),
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  _showEditProfileDialog(context, profile);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFFD700),
-                                  foregroundColor: Colors.black,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: const UiText(
+                                            text: 'Upload image functionality',
+                                          ),
+                                          backgroundColor: colorScheme.primary,
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.all(Insets.sm),
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.primary,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(
+                                        Ionicons.camera_outline,
+                                        color: colorScheme.onPrimary,
+                                        size: IconSizes.sm,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Edit Profile',
-                                  style: TextStyle(
-                                    fontSize: 16,
+                              ],
+                            ),
+                            VSpace.lg,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                UiText(
+                                  text: profile.name,
+                                  style: TextStyles.headlineSmall.copyWith(
                                     fontWeight: FontWeight.bold,
+                                    color: colorScheme.surface,
                                   ),
+                                ),
+                                if (profile.isVerified) ...[
+                                  HSpace.sm,
+                                  Icon(
+                                    Icons.verified,
+                                    color: Color(0xFF00D26A),
+                                    size: 24,
+                                  ),
+                                ],
+                              ],
+                            ),
+                            VSpace.xs,
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: Insets.med,
+                                vertical: Insets.xs,
+                              ),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary.withValues(
+                                  alpha: .2,
+                                ),
+                                borderRadius: Corners.fullBorder,
+                                border: Border.all(
+                                  color: colorScheme.primary,
+                                  width: 1,
                                 ),
                               ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Ionicons.construct_outline,
+                                    color: colorScheme.primary,
+                                    size: IconSizes.xs,
+                                  ),
+                                  HSpace.xs,
+                                  UiText(
+                                    text: profile.userType == 'hustler'
+                                        ? 'Hustler'
+                                        : 'Job Provider',
+                                    style: TextStyles.labelMedium.copyWith(
+                                      color: colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: colorScheme.surface,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(16.0),
+                              topRight: Radius.circular(16.0),
                             ),
                           ),
-
-                          const SizedBox(height: 32),
-                        ],
+                          child: CustomScrollView(
+                            slivers: [
+                              SliverToBoxAdapter(
+                                child: Column(
+                                  children: [
+                                    VSpace.xl,
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: Insets.lg,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: _buildStatCard(
+                                              context: context,
+                                              icon: Ionicons.star,
+                                              value: profile.rating
+                                                  .toStringAsFixed(1),
+                                              label: 'Rating',
+                                            ),
+                                          ),
+                                          HSpace.med,
+                                          Expanded(
+                                            child: _buildStatCard(
+                                              context: context,
+                                              icon: Ionicons
+                                                  .chatbox_ellipses_outline,
+                                              value: '${profile.totalReviews}',
+                                              label: 'Reviews',
+                                            ),
+                                          ),
+                                          HSpace.med,
+                                          Expanded(
+                                            child: _buildStatCard(
+                                              context: context,
+                                              icon: Ionicons.briefcase,
+                                              value: '${profile.completedJobs}',
+                                              label: 'Jobs Done',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    VSpace.xl,
+                                    _buildSectionTitle('Contact Details'),
+                                    _buildInfoCard(
+                                      context,
+                                      icon: Ionicons.mail_outline,
+                                      label: 'Email',
+                                      value: profile.email,
+                                    ),
+                                    _buildInfoCard(
+                                      context,
+                                      icon: Ionicons.call_outline,
+                                      label: 'Phone',
+                                      value: profile.phone ?? 'Not provided',
+                                    ),
+                                    VSpace.xl,
+                                    _buildSectionTitle('About Me'),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: Insets.lg,
+                                      ),
+                                      child: Container(
+                                        width: double.infinity,
+                                        padding: EdgeInsets.all(Insets.lg),
+                                        decoration: BoxDecoration(
+                                          color: colorScheme.surfaceContainer,
+                                          borderRadius: Corners.medBorder,
+                                          border: Border.all(
+                                            color: colorScheme.outline
+                                                .withValues(alpha: .1),
+                                          ),
+                                        ),
+                                        child: UiText(
+                                          text:
+                                              profile.bio ?? 'No bio added yet',
+                                          style: TextStyles.bodyLarge.copyWith(
+                                            color: colorScheme.onSurface
+                                                .withValues(alpha: .8),
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    VSpace.xl,
+                                    _buildSectionTitle('My Skills'),
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: Insets.lg,
+                                      ),
+                                      child: Wrap(
+                                        spacing: Insets.sm,
+                                        runSpacing: Insets.sm,
+                                        children: profile.skills.map((skill) {
+                                          return Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: Insets.med,
+                                              vertical: Insets.sm,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: colorScheme.primary
+                                                  .withValues(alpha: .2),
+                                              borderRadius: Corners.fullBorder,
+                                              border: Border.all(
+                                                color: colorScheme.primary,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Ionicons.checkmark_circle,
+                                                  color: colorScheme.primary,
+                                                  size: IconSizes.xs,
+                                                ),
+                                                HSpace.xs,
+                                                UiText(
+                                                  text: skill,
+                                                  style: TextStyles.labelLarge
+                                                      .copyWith(
+                                                        color:
+                                                            colorScheme.primary,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                    VSpace.xl,
+                                    UiText(
+                                      text:
+                                          'Member since ${_formatDate(profile.createdAt)}',
+                                      style: TextStyles.bodySmall.copyWith(
+                                        color: colorScheme.onSurface.withValues(
+                                          alpha: .5,
+                                        ),
+                                      ),
+                                    ),
+                                    VSpace.xl,
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: Insets.lg,
+                                      ),
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        child: PrimaryBtn(
+                                          onPressed: () {
+                                            _showEditProfileDialog(
+                                              context,
+                                              profile,
+                                            );
+                                          },
+                                          label: 'Edit Profile',
+                                          icon: Ionicons.create_outline,
+                                        ),
+                                      ),
+                                    ),
+                                    VSpace.xxl,
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-
-                // Loading Overlay
                 if (isUpdating)
                   Container(
-                    color: Colors.black.withOpacity(0.7),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFFFD700),
-                      ),
-                    ),
+                    color: colorScheme.surface.withValues(alpha: .7),
+                    child: const Center(child: StyledLoadSpinner()),
                   ),
               ],
             );
@@ -663,103 +438,95 @@ class ProfileScreenContent extends StatelessWidget {
   }
 
   Widget _buildStatCard({
+    required BuildContext context,
     required IconData icon,
     required String value,
     required String label,
   }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: const Color(0xFFFFD700), size: 24),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      padding: EdgeInsets.all(Insets.med),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
+        borderRadius: Corners.medBorder,
+        border: Border.all(color: colorScheme.outline.withValues(alpha: .1)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: colorScheme.primary, size: IconSizes.med),
+          VSpace.sm,
+          UiText(
+            text: value,
+            style: TextStyles.titleLarge.copyWith(fontWeight: FontWeight.bold),
+          ),
+          VSpace.xs,
+          UiText(
+            text: label,
+            style: TextStyles.bodySmall.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: .6),
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: Insets.lg,
+        vertical: Insets.med,
+      ),
       child: Align(
         alignment: Alignment.centerLeft,
-        child: Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: UiText(text: title, style: TextStyles.titleLarge),
       ),
     );
   }
 
-  Widget _buildInfoCard({
+  Widget _buildInfoCard(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required String value,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: Insets.lg, vertical: Insets.xs),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(Insets.lg),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          color: colorScheme.surfaceContainer,
+          borderRadius: Corners.medBorder,
+          border: Border.all(color: colorScheme.outline.withValues(alpha: .1)),
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(Insets.sm),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFD700).withOpacity(0.2),
-                borderRadius: BorderRadius.circular(10),
+                color: colorScheme.primary.withValues(alpha: .2),
+                borderRadius: Corners.smBorder,
               ),
-              child: Icon(icon, color: const Color(0xFFFFD700), size: 20),
+              child: Icon(icon, color: colorScheme.primary, size: IconSizes.sm),
             ),
-            const SizedBox(width: 16),
+            HSpace.lg,
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 12,
+                  UiText(
+                    text: label,
+                    style: TextStyles.bodySmall.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: .6),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
+                  VSpace.xs,
+                  UiText(
+                    text: value,
+                    style: TextStyles.bodyMedium.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -799,75 +566,27 @@ class ProfileScreenContent extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text(
-          'Edit Profile',
-          style: TextStyle(color: Colors.white),
-        ),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: UiText(text: 'Edit Profile', style: TextStyles.titleLarge),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: nameController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white.withOpacity(0.3),
-                    ),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFFFD700)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: phoneController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Phone',
-                  labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white.withOpacity(0.3),
-                    ),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFFFD700)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
+              StyledTextInput(controller: nameController, label: 'Name'),
+              VSpace.lg,
+              StyledTextInput(controller: phoneController, label: 'Phone'),
+              VSpace.lg,
+              StyledTextInput(
                 controller: bioController,
-                style: const TextStyle(color: Colors.white),
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: 'Bio',
-                  labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.white.withOpacity(0.3),
-                    ),
-                  ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFFFD700)),
-                  ),
-                ),
+                label: 'Bio',
+                numLines: 3,
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
-          ),
-          ElevatedButton(
+          TextBtn('Cancel', onPressed: () => Navigator.pop(dialogContext)),
+          PrimaryBtn(
             onPressed: () {
               context.read<ProfileBloc>().add(
                 UpdateProfile(
@@ -879,11 +598,7 @@ class ProfileScreenContent extends StatelessWidget {
               );
               Navigator.pop(dialogContext);
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700),
-              foregroundColor: Colors.black,
-            ),
-            child: const Text('Save'),
+            label: 'Save',
           ),
         ],
       ),
