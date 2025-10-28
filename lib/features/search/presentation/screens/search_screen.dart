@@ -2,66 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:kasi_hustle/core/data/datasources/job_data_source.dart';
 import 'package:kasi_hustle/core/theme/app_theme.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:kasi_hustle/core/widgets/buttons/icon_btn.dart';
 import 'package:kasi_hustle/core/widgets/styled_text_input.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
-import 'package:kasi_hustle/features/home/domain/models/job.dart';
-import 'package:kasi_hustle/features/home/presentation/widgets/job_card.dart';
-
-// Dummy BLoC classes for UI development
-abstract class SearchEvent {}
-class SearchJobs extends SearchEvent {
-  final String query;
-  SearchJobs(this.query);
-}
-
-abstract class SearchState {}
-class SearchInitial extends SearchState {}
-class SearchLoading extends SearchState {}
-class SearchError extends SearchState {
-  final String message;
-  SearchError(this.message);
-}
-class SearchLoaded extends SearchState {
-  final List<Job> results;
-  SearchLoaded(this.results);
-}
-
-class SearchBloc extends Bloc<SearchEvent, SearchState> {
-  SearchBloc() : super(SearchInitial()) {
-    on<SearchJobs>((event, emit) async {
-      emit(SearchLoading());
-      await Future.delayed(const Duration(seconds: 1));
-      if (event.query.isEmpty) {
-        emit(SearchInitial());
-      } else {
-        // Dummy data
-        emit(SearchLoaded(List.generate(5, (index) => Job(
-          id: index.toString(),
-          title: 'Job ${index + 1}',
-          description: 'This is a dummy job description for job ${index + 1}',
-          location: 'Soweto',
-          latitude: -26.2682,
-          longitude: 27.8536,
-          budget: 500.0 + (index * 100),
-          createdBy: 'user_id',
-          createdAt: DateTime.now(),
-          status: 'open',
-        ))));
-      }
-    });
-  }
-}
+import 'package:kasi_hustle/core/widgets/job_card.dart';
+import 'package:kasi_hustle/features/search/bloc/search_bloc.dart';
+import 'package:kasi_hustle/features/search/data/datasources/search_local_data_source.dart';
+import 'package:kasi_hustle/features/search/data/repositories/search_repository_impl.dart';
+import 'package:kasi_hustle/features/search/domain/usecases/search_jobs.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Shared data source
+    final jobDataSource = JobDataSourceImpl(Supabase.instance.client);
+
+    // Data layer
+    final localDataSource = SearchLocalDataSourceImpl(jobDataSource);
+
+    // Data repository implementation
+    final repository = SearchRepositoryImpl(localDataSource);
+
+    // Domain usecase
+    final searchJobs = makeSearchJobs(repository);
+
     return BlocProvider(
-      create: (context) => SearchBloc(),
+      create: (context) => SearchBloc(searchJobs),
       child: const SearchScreenContent(),
     );
   }
@@ -127,21 +99,18 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                 controller: _searchController,
                 autoFocus: true,
                 hintText: 'Search by title, skill, or keyword...',
-                prefixIcon: Icon(
-                  Ionicons.search,
-                  color: colorScheme.primary,
-                ),
+                prefixIcon: Icon(Ionicons.search, color: colorScheme.primary),
                 suffixWidget: _searchController.text.isNotEmpty
                     ? IconBtn(
                         Ionicons.close_circle,
                         onPressed: () {
                           _searchController.clear();
-                          context.read<SearchBloc>().add(SearchJobs(''));
+                          context.read<SearchBloc>().add(SearchJobsEvent(''));
                         },
                       )
                     : null,
                 onChanged: (value) {
-                  context.read<SearchBloc>().add(SearchJobs(value));
+                  context.read<SearchBloc>().add(SearchJobsEvent(value));
                 },
               ),
             ),
@@ -165,7 +134,10 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                     }
                     if (state is SearchLoaded) {
                       return ListView.builder(
-                        padding: EdgeInsets.symmetric(vertical: Insets.lg, horizontal: Insets.lg),
+                        padding: EdgeInsets.symmetric(
+                          vertical: Insets.lg,
+                          horizontal: Insets.lg,
+                        ),
                         itemCount: state.results.length,
                         itemBuilder: (context, index) {
                           return JobCard(job: state.results[index]);
@@ -176,11 +148,19 @@ class _SearchScreenContentState extends State<SearchScreenContent> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Ionicons.search_outline, size: 60, color: colorScheme.outline),
+                          Icon(
+                            Ionicons.search_outline,
+                            size: 60,
+                            color: colorScheme.outline,
+                          ),
                           VSpace.med,
                           UiText(
                             text: 'Start typing to search for jobs',
-                            style: TextStyles.bodyLarge.copyWith(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                            style: TextStyles.bodyLarge.copyWith(
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
+                            ),
                           ),
                         ],
                       ),

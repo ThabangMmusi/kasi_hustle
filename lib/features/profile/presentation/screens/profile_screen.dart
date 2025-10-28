@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:kasi_hustle/core/services/user_profile_service.dart';
 import 'package:kasi_hustle/core/theme/app_theme.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
-
 import 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart';
+import 'package:kasi_hustle/core/widgets/buttons/secondary_btn.dart';
 import 'package:kasi_hustle/core/widgets/buttons/text_btn.dart';
 import 'package:kasi_hustle/core/widgets/styled_load_spinner.dart';
-import 'package:kasi_hustle/core/widgets/styled_text_input.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
+import 'package:kasi_hustle/features/auth/bloc/app_bloc.dart';
 import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_event.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_state.dart';
+import 'package:kasi_hustle/features/profile/presentation/widgets/map_cache_settings.dart';
+import 'package:kasi_hustle/features/profile/presentation/screens/edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -21,7 +25,9 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ProfileBloc()..add(LoadProfile()),
+      create: (context) =>
+          ProfileBloc(userProfileService: UserProfileService())
+            ..add(LoadProfile()),
       child: const ProfileScreenContent(),
     );
   }
@@ -147,36 +153,6 @@ class ProfileScreenContent extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: const UiText(
-                                            text: 'Upload image functionality',
-                                          ),
-                                          backgroundColor: colorScheme.primary,
-                                        ),
-                                      );
-                                    },
-                                    child: Container(
-                                      padding: EdgeInsets.all(Insets.sm),
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.primary,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        Ionicons.camera_outline,
-                                        color: colorScheme.onPrimary,
-                                        size: IconSizes.sm,
-                                      ),
-                                    ),
-                                  ),
-                                ),
                               ],
                             ),
                             VSpace.lg,
@@ -184,7 +160,8 @@ class ProfileScreenContent extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 UiText(
-                                  text: profile.name,
+                                  text:
+                                      '${profile.firstName} ${profile.lastName}',
                                   style: TextStyles.headlineSmall.copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: colorScheme.surface,
@@ -293,20 +270,7 @@ class ProfileScreenContent extends StatelessWidget {
                                       ),
                                     ),
                                     VSpace.xl,
-                                    _buildSectionTitle('Contact Details'),
-                                    _buildInfoCard(
-                                      context,
-                                      icon: Ionicons.mail_outline,
-                                      label: 'Email',
-                                      value: profile.email,
-                                    ),
-                                    _buildInfoCard(
-                                      context,
-                                      icon: Ionicons.call_outline,
-                                      label: 'Phone',
-                                      value: profile.phone ?? 'Not provided',
-                                    ),
-                                    VSpace.xl,
+
                                     _buildSectionTitle('About Me'),
                                     Padding(
                                       padding: EdgeInsets.symmetric(
@@ -334,54 +298,100 @@ class ProfileScreenContent extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    VSpace.xl,
-                                    _buildSectionTitle('My Skills'),
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: Insets.lg,
-                                      ),
-                                      child: Wrap(
-                                        spacing: Insets.sm,
-                                        runSpacing: Insets.sm,
-                                        children: profile.skills.map((skill) {
-                                          return Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: Insets.med,
-                                              vertical: Insets.sm,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: colorScheme.primary
-                                                  .withValues(alpha: .2),
-                                              borderRadius: Corners.fullBorder,
-                                              border: Border.all(
-                                                color: colorScheme.primary,
+                                    if (profile.userType == 'hustler') ...[
+                                      VSpace.xl,
+                                      _buildSectionTitle('Primary Skills'),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: Insets.lg,
+                                        ),
+                                        child: Wrap(
+                                          spacing: Insets.sm,
+                                          runSpacing: Insets.sm,
+                                          children: profile.primarySkills.map((
+                                            skill,
+                                          ) {
+                                            return Container(
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: Insets.med,
+                                                vertical: Insets.sm,
                                               ),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Ionicons.checkmark_circle,
+                                              decoration: BoxDecoration(
+                                                color: colorScheme.primary
+                                                    .withValues(alpha: 0.2),
+                                                borderRadius:
+                                                    Corners.fullBorder,
+                                                border: Border.all(
                                                   color: colorScheme.primary,
-                                                  size: IconSizes.xs,
                                                 ),
-                                                HSpace.xs,
-                                                UiText(
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Ionicons.star,
+                                                    color: colorScheme.primary,
+                                                    size: IconSizes.xs,
+                                                  ),
+                                                  HSpace.xs,
+                                                  UiText(
+                                                    text: skill,
+                                                    style: TextStyles.labelLarge
+                                                        .copyWith(
+                                                          color: colorScheme
+                                                              .primary,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ),
+                                      VSpace.xl,
+                                      _buildSectionTitle('Additional Skills'),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: Insets.lg,
+                                        ),
+                                        child: Wrap(
+                                          spacing: Insets.sm,
+                                          runSpacing: Insets.sm,
+                                          children: profile.secondarySkills.map(
+                                            (skill) {
+                                              return Container(
+                                                padding: EdgeInsets.symmetric(
+                                                  horizontal: Insets.med,
+                                                  vertical: Insets.sm,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: colorScheme.secondary
+                                                      .withValues(alpha: 0.2),
+                                                  borderRadius:
+                                                      Corners.fullBorder,
+                                                  border: Border.all(
+                                                    color:
+                                                        colorScheme.secondary,
+                                                  ),
+                                                ),
+                                                child: UiText(
                                                   text: skill,
-                                                  style: TextStyles.labelLarge
+                                                  style: TextStyles.labelMedium
                                                       .copyWith(
-                                                        color:
-                                                            colorScheme.primary,
+                                                        color: colorScheme
+                                                            .secondary,
                                                         fontWeight:
                                                             FontWeight.bold,
                                                       ),
                                                 ),
-                                              ],
-                                            ),
-                                          );
-                                        }).toList(),
+                                              );
+                                            },
+                                          ).toList(),
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                     VSpace.xl,
                                     UiText(
                                       text:
@@ -401,13 +411,71 @@ class ProfileScreenContent extends StatelessWidget {
                                         width: double.infinity,
                                         child: PrimaryBtn(
                                           onPressed: () {
-                                            _showEditProfileDialog(
+                                            _navigateToEditProfile(
                                               context,
                                               profile,
                                             );
                                           },
                                           label: 'Edit Profile',
                                           icon: Ionicons.create_outline,
+                                        ),
+                                      ),
+                                    ),
+                                    VSpace.med,
+
+                                    // Map Cache Settings
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: Insets.lg,
+                                      ),
+                                      child: const MapCacheSettings(),
+                                    ),
+                                    VSpace.med,
+
+                                    Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: Insets.lg,
+                                      ),
+                                      child: SizedBox(
+                                        width: double.infinity,
+                                        child: SecondaryBtn(
+                                          icon: Ionicons.log_out_outline,
+                                          label: 'Logout',
+                                          onPressed: () {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) => AlertDialog(
+                                                title: UiText(
+                                                  text: 'Logout',
+                                                  style: TextStyles.titleLarge,
+                                                ),
+                                                content: UiText(
+                                                  text:
+                                                      'Are you sure you want to logout?',
+                                                  style: TextStyles.bodyLarge,
+                                                ),
+                                                actions: [
+                                                  TextBtn(
+                                                    'Cancel',
+                                                    onPressed: () =>
+                                                        Navigator.pop(context),
+                                                  ),
+                                                  TextBtn(
+                                                    'Logout',
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                      context
+                                                          .read<AppBloc>()
+                                                          .add(
+                                                            AppLogoutRequested(),
+                                                          );
+                                                    },
+                                                    color: colorScheme.error,
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
                                         ),
                                       ),
                                     ),
@@ -485,60 +553,6 @@ class ProfileScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: Insets.lg, vertical: Insets.xs),
-      child: Container(
-        padding: EdgeInsets.all(Insets.lg),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainer,
-          borderRadius: Corners.medBorder,
-          border: Border.all(color: colorScheme.outline.withValues(alpha: .1)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(Insets.sm),
-              decoration: BoxDecoration(
-                color: colorScheme.primary.withValues(alpha: .2),
-                borderRadius: Corners.smBorder,
-              ),
-              child: Icon(icon, color: colorScheme.primary, size: IconSizes.sm),
-            ),
-            HSpace.lg,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  UiText(
-                    text: label,
-                    style: TextStyles.bodySmall.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: .6),
-                    ),
-                  ),
-                  VSpace.xs,
-                  UiText(
-                    text: value,
-                    style: TextStyles.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   String _formatDate(DateTime date) {
     final months = [
       'Jan',
@@ -557,50 +571,17 @@ class ProfileScreenContent extends StatelessWidget {
     return '${months[date.month - 1]} ${date.year}';
   }
 
-  void _showEditProfileDialog(BuildContext context, UserProfile profile) {
-    final nameController = TextEditingController(text: profile.name);
-    final phoneController = TextEditingController(text: profile.phone);
-    final bioController = TextEditingController(text: profile.bio);
-    final selectedSkills = List<String>.from(profile.skills);
+  // Add this to the top of profile_screen.dart to navigate to edit screen:
 
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        title: UiText(text: 'Edit Profile', style: TextStyles.titleLarge),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              StyledTextInput(controller: nameController, label: 'Name'),
-              VSpace.lg,
-              StyledTextInput(controller: phoneController, label: 'Phone'),
-              VSpace.lg,
-              StyledTextInput(
-                controller: bioController,
-                label: 'Bio',
-                numLines: 3,
-              ),
-            ],
-          ),
+  // In _ProfileScreenContentState, replace _showEditProfileDialog with:
+  void _navigateToEditProfile(BuildContext context, UserProfile profile) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: context.read<ProfileBloc>(),
+          child: EditProfileScreen(profile: profile),
         ),
-        actions: [
-          TextBtn('Cancel', onPressed: () => Navigator.pop(dialogContext)),
-          PrimaryBtn(
-            onPressed: () {
-              context.read<ProfileBloc>().add(
-                UpdateProfile(
-                  name: nameController.text,
-                  phone: phoneController.text,
-                  skills: selectedSkills,
-                  bio: bioController.text,
-                ),
-              );
-              Navigator.pop(dialogContext);
-            },
-            label: 'Save',
-          ),
-        ],
       ),
     );
   }

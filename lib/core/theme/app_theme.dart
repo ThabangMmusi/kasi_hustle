@@ -247,7 +247,7 @@ class KasiTheme {
 
       // Snackbar
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.darkCard,
+        backgroundColor: AppColors.darkSurface,
         contentTextStyle: TextStyles.bodyMedium.copyWith(
           color: AppColors.darkTextPrimary,
         ),
@@ -459,9 +459,9 @@ class KasiTheme {
 
       // Snackbar
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.lightCard,
+        backgroundColor: AppColors.lightTextPrimary,
         contentTextStyle: TextStyles.bodyMedium.copyWith(
-          color: AppColors.lightTextPrimary,
+          color: AppColors.lightBackground,
         ),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(

@@ -1,10 +1,14 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
+import 'package:kasi_hustle/core/services/user_profile_service.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_event.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
-  ProfileBloc() : super(ProfileInitial()) {
+  final UserProfileService _userProfileService;
+
+  ProfileBloc({required UserProfileService userProfileService})
+    : _userProfileService = userProfileService,
+      super(ProfileInitial()) {
     on<LoadProfile>(_onLoadProfile);
     on<UpdateProfile>(_onUpdateProfile);
     on<UploadProfileImage>(_onUploadProfileImage);
@@ -16,25 +20,12 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     emit(ProfileLoading());
     try {
-      // Simulate fetching from Supabase
-      await Future.delayed(const Duration(seconds: 1));
-
-      final profile = UserProfile(
-        id: '1',
-        name: 'Thabo Mkhize',
-        email: 'thabo.mkhize@example.com',
-        phone: '+27 82 456 7890',
-        skills: ['Plumbing', 'Electrical', 'Carpentry'],
-        bio:
-            'Experienced handyman with 5+ years in the trade. Available for quick jobs around Soweto. Quality work guaranteed!',
-        profileImage: null,
-        rating: 4.7,
-        totalReviews: 23,
-        isVerified: true,
-        userType: 'hustler',
-        createdAt: DateTime.now().subtract(const Duration(days: 180)),
-        completedJobs: 47,
-      );
+      // Get current user from UserProfileService
+      final profile = _userProfileService.currentUser;
+      if (profile == null) {
+        emit(ProfileError('User not logged in'));
+        return;
+      }
 
       emit(ProfileLoaded(profile: profile));
     } catch (e) {
@@ -53,14 +44,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       try {
         await Future.delayed(const Duration(seconds: 1));
 
-        final updatedProfile = currentState.profile.copyWith(
-          name: event.name,
-          phone: event.phone,
-          skills: event.skills,
-          bio: event.bio,
-        );
-
-        emit(ProfileLoaded(profile: updatedProfile, isEditing: false));
+        // Simply use the updated profile from the event
+        emit(ProfileLoaded(profile: event.profile, isEditing: false));
       } catch (e) {
         emit(ProfileError('Failed to update profile: $e'));
       }

@@ -1,11 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kasi_hustle/core/services/user_profile_service.dart';
 import 'package:kasi_hustle/features/home/domain/models/job.dart';
-import 'package:kasi_hustle/features/home/domain/models/user_profile.dart';
 import 'package:kasi_hustle/features/home/presentation/bloc/home_event.dart';
 import 'package:kasi_hustle/features/home/presentation/bloc/home_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  HomeBloc() : super(HomeInitial()) {
+  final UserProfileService _userProfileService;
+
+  HomeBloc({required UserProfileService userProfileService})
+    : _userProfileService = userProfileService,
+      super(HomeInitial()) {
     on<LoadHomeData>(_onLoadHomeData);
     on<RefreshHomeData>(_onRefreshHomeData);
     on<SearchJobs>(_onSearchJobs);
@@ -18,21 +22,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) async {
     emit(HomeLoading());
     try {
-      // Simulate fetching from Supabase
-      await Future.delayed(const Duration(seconds: 1));
-
-      final user = UserProfile(
-        id: '1',
-        name: 'Thabo Mkhize',
-        email: 'thabo@example.com',
-        skills: ['Plumbing', 'Electrical', 'Carpentry'],
-        rating: 4.5,
-        totalReviews: 23,
-      );
+      // Get current user from UserProfileService
+      final user = _userProfileService.currentUser;
+      if (user == null) {
+        emit(HomeError('User not logged in'));
+        return;
+      }
 
       final allJobs = _getMockJobs();
-      final recommended = _getRecommendedJobs(allJobs, user.skills);
-
+      final recommended = _getRecommendedJobs(allJobs, user.primarySkills);
       emit(
         HomeLoaded(
           user: user,
@@ -57,7 +55,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         final allJobs = _getMockJobs();
         final recommended = _getRecommendedJobs(
           allJobs,
-          currentState.user.skills,
+          currentState.user.primarySkills,
         );
 
         emit(

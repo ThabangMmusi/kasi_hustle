@@ -1,5 +1,5 @@
 import 'package:kasi_hustle/features/home/domain/models/job.dart';
-import 'package:kasi_hustle/features/home/domain/models/user_profile.dart';
+import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
 
 abstract class HomeState {}
 

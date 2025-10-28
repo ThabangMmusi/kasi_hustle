@@ -3,6 +3,7 @@ import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
 import 'package:kasi_hustle/features/home/domain/models/job.dart';
+import 'package:kasi_hustle/features/home/presentation/widgets/job_details_bottom_sheet.dart';
 
 class JobCard extends StatelessWidget {
   final Job job;
@@ -19,21 +20,14 @@ class JobCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainer,
         borderRadius: Corners.medBorder,
-        border: Border.all(color: colorScheme.outline.withOpacity(0.1)),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: Corners.medBorder,
           onTap: () {
-            // Navigate to job detail
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: UiText(text: 'Opening ${job.title}'),
-                backgroundColor: colorScheme.primary,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            JobDetailsBottomSheet.show(context, job);
           },
           child: Padding(
             padding: EdgeInsets.all(Insets.lg),
@@ -42,6 +36,7 @@ class JobCard extends StatelessWidget {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Flexible(
                       child: UiText(
@@ -49,22 +44,31 @@ class JobCard extends StatelessWidget {
                         style: TextStyles.titleMedium,
                       ),
                     ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: Insets.sm,
-                        vertical: Insets.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary.withOpacity(0.2),
-                        borderRadius: Corners.smBorder,
-                      ),
-                      child: UiText(
-                        text: 'R${job.budget.toStringAsFixed(0)}',
-                        style: TextStyles.bodyMedium.copyWith(
-                          color: colorScheme.primary,
-                          fontWeight: FontWeight.bold,
+                    SizedBox(width: Insets.sm),
+                    // Containers row for budget and required skills
+                    Wrap(
+                      spacing: Insets.xs,
+                      direction: Axis.horizontal,
+                      children: [
+                        // Budget Container
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: Insets.sm,
+                            vertical: Insets.xs,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.primary.withValues(alpha: 0.2),
+                            borderRadius: Corners.smBorder,
+                          ),
+                          child: UiText(
+                            text: 'R${job.budget.toStringAsFixed(0)}',
+                            style: TextStyles.bodyMedium.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
                 ),
@@ -72,7 +76,7 @@ class JobCard extends StatelessWidget {
                 Text(
                   job.description,
                   style: TextStyles.bodyMedium.copyWith(
-                    color: colorScheme.onSurface.withOpacity(0.7),
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -82,27 +86,27 @@ class JobCard extends StatelessWidget {
                   children: [
                     Icon(
                       Ionicons.location_outline,
-                      color: colorScheme.onSurface.withOpacity(0.5),
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                       size: IconSizes.xs,
                     ),
                     HSpace.xs,
                     UiText(
                       text: job.location,
                       style: TextStyles.bodySmall.copyWith(
-                        color: colorScheme.onSurface.withOpacity(0.5),
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
                     HSpace.lg,
                     Icon(
                       Ionicons.time_outline,
-                      color: colorScheme.onSurface.withOpacity(0.5),
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
                       size: IconSizes.xs,
                     ),
                     HSpace.xs,
                     UiText(
                       text: _getTimeAgo(job.createdAt),
                       style: TextStyles.bodySmall.copyWith(
-                        color: colorScheme.onSurface.withOpacity(0.5),
+                        color: colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                     ),
                   ],

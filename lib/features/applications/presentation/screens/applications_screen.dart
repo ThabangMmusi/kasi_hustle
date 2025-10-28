@@ -6,177 +6,11 @@ import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
 import 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart';
-
-// ==================== MODELS ====================
-
-class Application {
-  final String id;
-  final String jobId;
-  final String jobTitle;
-  final String jobDescription;
-  final double budget;
-  final String location;
-  final String applicantId;
-  final String applicantName;
-  final String message;
-  final String status; // 'pending', 'accepted', 'rejected'
-  final DateTime appliedAt;
-  final String jobOwnerId;
-  final String jobOwnerName;
-
-  Application({
-    required this.id,
-    required this.jobId,
-    required this.jobTitle,
-    required this.jobDescription,
-    required this.budget,
-    required this.location,
-    required this.applicantId,
-    required this.applicantName,
-    required this.message,
-    required this.status,
-    required this.appliedAt,
-    required this.jobOwnerId,
-    required this.jobOwnerName,
-  });
-}
-
-// ==================== BLOC EVENTS ====================
-
-abstract class ApplicationsEvent {}
-
-class LoadApplications extends ApplicationsEvent {}
-
-class WithdrawApplication extends ApplicationsEvent {
-  final String applicationId;
-  WithdrawApplication(this.applicationId);
-}
-
-// ==================== BLOC STATES ====================
-
-abstract class ApplicationsState {}
-
-class ApplicationsInitial extends ApplicationsState {}
-
-class ApplicationsLoading extends ApplicationsState {}
-
-class ApplicationsLoaded extends ApplicationsState {
-  final List<Application> myApplications;
-
-  ApplicationsLoaded({required this.myApplications});
-
-  ApplicationsLoaded copyWith({List<Application>? myApplications}) {
-    return ApplicationsLoaded(
-      myApplications: myApplications ?? this.myApplications,
-    );
-  }
-
-  List<Application> get pendingApplications =>
-      myApplications.where((app) => app.status == 'pending').toList();
-
-  List<Application> get acceptedApplications =>
-      myApplications.where((app) => app.status == 'accepted').toList();
-
-  List<Application> get rejectedApplications =>
-      myApplications.where((app) => app.status == 'rejected').toList();
-}
-
-class ApplicationsError extends ApplicationsState {
-  final String message;
-  ApplicationsError(this.message);
-}
-
-// ==================== BLOC ====================
-
-class ApplicationsBloc extends Bloc<ApplicationsEvent, ApplicationsState> {
-  ApplicationsBloc() : super(ApplicationsInitial()) {
-    on<LoadApplications>(_onLoadApplications);
-    on<WithdrawApplication>(_onWithdrawApplication);
-  }
-
-  Future<void> _onLoadApplications(
-    LoadApplications event,
-    Emitter<ApplicationsState> emit,
-  ) async {
-    emit(ApplicationsLoading());
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-      final myApplications = _getMockApplications();
-      emit(ApplicationsLoaded(myApplications: myApplications));
-    } catch (e) {
-      emit(ApplicationsError('Failed to load applications: $e'));
-    }
-  }
-
-  Future<void> _onWithdrawApplication(
-    WithdrawApplication event,
-    Emitter<ApplicationsState> emit,
-  ) async {
-    if (state is ApplicationsLoaded) {
-      final currentState = state as ApplicationsLoaded;
-      try {
-        await Future.delayed(const Duration(milliseconds: 500));
-        final updatedApplications = currentState.myApplications
-            .where((app) => app.id != event.applicationId)
-            .toList();
-        emit(currentState.copyWith(myApplications: updatedApplications));
-      } catch (e) {
-        emit(ApplicationsError('Failed to withdraw application: $e'));
-      }
-    }
-  }
-
-  List<Application> _getMockApplications() {
-    return [
-      Application(
-        id: '1',
-        jobId: 'job1',
-        jobTitle: 'Plumbing Repair Needed',
-        jobDescription: 'Kitchen sink leaking, need urgent fix',
-        budget: 350.0,
-        location: 'Soweto, 2.3 km away',
-        applicantId: 'user1',
-        applicantName: 'Thabo Mkhize',
-        message:
-            'Hi! I have 5 years experience with plumbing. Available today.',
-        status: 'pending',
-        appliedAt: DateTime.now().subtract(const Duration(hours: 3)),
-        jobOwnerId: 'owner1',
-        jobOwnerName: 'Sarah Nkosi',
-      ),
-      Application(
-        id: '2',
-        jobId: 'job2',
-        jobTitle: 'Electrician Needed',
-        jobDescription: 'Wiring for a new room.',
-        budget: 1500.0,
-        location: 'Orlando, Soweto',
-        applicantId: 'user1',
-        applicantName: 'Thabo Mkhize',
-        message: 'I am a certified electrician.',
-        status: 'accepted',
-        appliedAt: DateTime.now().subtract(const Duration(days: 2)),
-        jobOwnerId: 'owner2',
-        jobOwnerName: 'Jane Doe',
-      ),
-      Application(
-        id: '3',
-        jobId: 'job3',
-        jobTitle: 'Gardener Wanted',
-        jobDescription: 'General garden maintenance.',
-        budget: 200.0,
-        location: 'Diepkloof, Soweto',
-        applicantId: 'user1',
-        applicantName: 'Thabo Mkhize',
-        message: 'I love gardening.',
-        status: 'rejected',
-        appliedAt: DateTime.now().subtract(const Duration(days: 3)),
-        jobOwnerId: 'owner3',
-        jobOwnerName: 'John Smith',
-      ),
-    ];
-  }
-}
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../data/repositories/application_repository_impl.dart';
+import '../../domain/models/application.dart';
+import '../../domain/usecases/application_usecases.dart';
+import '../bloc/bloc.dart';
 
 // ==================== APPLICATIONS SCREEN ====================
 
@@ -185,8 +19,20 @@ class ApplicationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final supabaseClient = Supabase.instance.client;
+    final repository = ApplicationRepositoryImpl(supabaseClient);
+    final getReceivedApplicationsUseCase = GetReceivedApplicationsUseCase(
+      repository,
+    );
+    final updateApplicationStatusUseCase = UpdateApplicationStatusUseCase(
+      repository,
+    );
+
     return BlocProvider(
-      create: (context) => ApplicationsBloc()..add(LoadApplications()),
+      create: (context) => ReceivedApplicationsBloc(
+        getReceivedApplicationsUseCase: getReceivedApplicationsUseCase,
+        updateApplicationStatusUseCase: updateApplicationStatusUseCase,
+      )..add(LoadReceivedApplications()),
       child: const ApplicationsScreenContent(),
     );
   }
@@ -211,7 +57,7 @@ class ApplicationsScreenContent extends StatelessWidget {
     );
 
     return Scaffold(
-      body: BlocBuilder<ApplicationsBloc, ApplicationsState>(
+      body: BlocBuilder<ReceivedApplicationsBloc, ReceivedApplicationsState>(
         builder: (context, state) {
           return Container(
             color: AppColors.darkSurface,
@@ -231,7 +77,7 @@ class ApplicationsScreenContent extends StatelessWidget {
                         ),
                       ),
                       VSpace.lg,
-                      if (state is ApplicationsLoaded)
+                      if (state is ReceivedApplicationsLoaded)
                         Row(
                           children: [
                             Expanded(
@@ -276,17 +122,17 @@ class ApplicationsScreenContent extends StatelessWidget {
                     ),
                     child: Builder(
                       builder: (context) {
-                        if (state is ApplicationsLoading) {
+                        if (state is ReceivedApplicationsLoading) {
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
                         }
 
-                        if (state is ApplicationsError) {
+                        if (state is ReceivedApplicationsError) {
                           return Center(child: Text(state.message));
                         }
 
-                        if (state is ApplicationsLoaded) {
+                        if (state is ReceivedApplicationsLoaded) {
                           return _buildMyApplicationsList(context, state);
                         }
 
@@ -305,9 +151,9 @@ class ApplicationsScreenContent extends StatelessWidget {
 
   Widget _buildMyApplicationsList(
     BuildContext context,
-    ApplicationsLoaded state,
+    ReceivedApplicationsLoaded state,
   ) {
-    if (state.myApplications.isEmpty) {
+    if (state.applications.isEmpty) {
       final colorScheme = Theme.of(context).colorScheme;
       return Center(
         child: Column(
@@ -316,13 +162,13 @@ class ApplicationsScreenContent extends StatelessWidget {
             Icon(
               Icons.work_off_outlined,
               size: 80,
-              color: colorScheme.onSurface.withOpacity(0.3),
+              color: colorScheme.onSurface.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 16),
             Text(
               'No applications yet',
               style: TextStyle(
-                color: colorScheme.onSurface.withOpacity(0.6),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
                 fontSize: 18,
               ),
             ),
@@ -330,7 +176,7 @@ class ApplicationsScreenContent extends StatelessWidget {
             Text(
               'Start applying to jobs to see them here',
               style: TextStyle(
-                color: colorScheme.onSurface.withOpacity(0.4),
+                color: colorScheme.onSurface.withValues(alpha: 0.4),
                 fontSize: 14,
               ),
             ),
@@ -463,11 +309,11 @@ class ApplicationsScreenContent extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A1A),
         title: const Text(
-          'Withdraw Application',
+          'Reject Application',
           style: TextStyle(color: Colors.white),
         ),
         content: const Text(
-          'Are you sure you want to withdraw this application?',
+          'Are you sure you want to reject this application?',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -477,13 +323,13 @@ class ApplicationsScreenContent extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              context.read<ApplicationsBloc>().add(
-                WithdrawApplication(applicationId),
+              context.read<ReceivedApplicationsBloc>().add(
+                RejectApplicationEvent(applicationId),
               );
               Navigator.pop(dialogContext);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('Application withdrawn'),
+                  content: Text('Application rejected'),
                   backgroundColor: Color(0xFFFFD700),
                 ),
               );
@@ -492,7 +338,7 @@ class ApplicationsScreenContent extends StatelessWidget {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Withdraw'),
+            child: const Text('Reject'),
           ),
         ],
       ),
@@ -520,7 +366,7 @@ class ApplicationCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainer,
         borderRadius: Corners.medBorder,
-        border: Border.all(color: colorScheme.outline.withOpacity(0.1)),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -561,7 +407,7 @@ class ApplicationCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _getStatusColor().withOpacity(0.2),
+                            color: _getStatusColor().withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -590,7 +436,7 @@ class ApplicationCard extends StatelessWidget {
                     Text(
                       application.jobDescription,
                       style: TextStyles.bodyMedium.copyWith(
-                        color: colorScheme.onSurface.withOpacity(0.7),
+                        color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -600,14 +446,14 @@ class ApplicationCard extends StatelessWidget {
                       children: [
                         Icon(
                           Ionicons.person_outline,
-                          color: colorScheme.onSurface.withOpacity(0.5),
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                           size: IconSizes.xs,
                         ),
                         HSpace.xs,
                         UiText(
                           text: 'Posted by ${application.jobOwnerName}',
                           style: TextStyles.bodySmall.copyWith(
-                            color: colorScheme.onSurface.withOpacity(0.5),
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                         HSpace.lg,
@@ -631,27 +477,27 @@ class ApplicationCard extends StatelessWidget {
                       children: [
                         Icon(
                           Ionicons.location_outline,
-                          color: colorScheme.onSurface.withOpacity(0.5),
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                           size: IconSizes.xs,
                         ),
                         HSpace.xs,
                         UiText(
                           text: application.location,
                           style: TextStyles.bodySmall.copyWith(
-                            color: colorScheme.onSurface.withOpacity(0.5),
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                         HSpace.lg,
                         Icon(
                           Ionicons.time_outline,
-                          color: colorScheme.onSurface.withOpacity(0.5),
+                          color: colorScheme.onSurface.withValues(alpha: 0.5),
                           size: IconSizes.xs,
                         ),
                         HSpace.xs,
                         UiText(
                           text: _getTimeAgo(application.appliedAt),
                           style: TextStyles.bodySmall.copyWith(
-                            color: colorScheme.onSurface.withOpacity(0.5),
+                            color: colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
                       ],
@@ -671,7 +517,7 @@ class ApplicationCard extends StatelessWidget {
                     width: double.infinity,
                     child: PrimaryBtn(
                       onPressed: onWithdraw,
-                      label: 'Withdraw Application',
+                      label: 'Reject Application',
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all(
                           colorScheme.error,

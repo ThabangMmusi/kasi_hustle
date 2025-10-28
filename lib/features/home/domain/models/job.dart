@@ -9,6 +9,8 @@ class Job {
   final String createdBy;
   final DateTime createdAt;
   final String status;
+  final List<String> imageUrls;
+  final List<String> requiredSkills;
 
   Job({
     required this.id,
@@ -21,6 +23,8 @@ class Job {
     required this.createdBy,
     required this.createdAt,
     required this.status,
+    this.imageUrls = const [],
+    this.requiredSkills = const [],
   });
 
   factory Job.fromJson(Map<String, dynamic> json) {
@@ -37,6 +41,12 @@ class Job {
         json['created_at'] ?? DateTime.now().toIso8601String(),
       ),
       status: json['status'] ?? 'open',
+      imageUrls: json['image_urls'] != null
+          ? List<String>.from(json['image_urls'])
+          : [],
+      requiredSkills: json['required_skills'] != null
+          ? List<String>.from(json['required_skills'])
+          : [],
     );
   }
 }

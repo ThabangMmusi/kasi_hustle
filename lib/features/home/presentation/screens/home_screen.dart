@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:kasi_hustle/core/data/datasources/job_data_source.dart';
 import 'package:kasi_hustle/core/theme/app_theme.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
-import 'package:kasi_hustle/core/widgets/buttons/icon_btn.dart';
 import 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart';
 import 'package:kasi_hustle/core/widgets/styled_load_spinner.dart';
-import 'package:kasi_hustle/core/widgets/styled_text_input.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
-import 'package:kasi_hustle/features/home/presentation/bloc/home_bloc.dart';
-import 'package:kasi_hustle/features/home/presentation/bloc/home_event.dart';
-import 'package:kasi_hustle/features/home/presentation/bloc/home_state.dart';
-import 'package:kasi_hustle/features/home/presentation/widgets/job_card.dart';
-import 'package:kasi_hustle/features/search/presentation/screens/search_screen.dart';
+import 'package:kasi_hustle/features/home/bloc/home_bloc.dart';
+import 'package:kasi_hustle/features/home/data/datasources/home_local_data_source.dart';
+import 'package:kasi_hustle/features/home/data/repositories/home_repository_impl.dart';
+import 'package:kasi_hustle/features/home/domain/usecases/filter_jobs_by_skill.dart';
+import 'package:kasi_hustle/features/home/domain/usecases/get_jobs.dart';
+import 'package:kasi_hustle/features/home/domain/usecases/get_recommended_jobs.dart';
+import 'package:kasi_hustle/features/home/domain/usecases/get_user_profile.dart';
+import 'package:kasi_hustle/features/home/domain/usecases/search_jobs.dart';
+import 'package:kasi_hustle/features/home/domain/usecases/submit_application_usecase.dart';
+import 'package:kasi_hustle/core/widgets/job_card.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ==================== HOME SCREEN ====================
 
@@ -23,8 +28,34 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Shared data source
+    final jobDataSource = JobDataSourceImpl(Supabase.instance.client);
+
+    // Data layer
+    final localDataSource = HomeLocalDataSourceImpl(jobDataSource);
+
+    // Data repository implementation
+    final repository = HomeRepositoryImpl(localDataSource);
+
+    // Domain usecases
+    final getUserProfile = makeGetUserProfile(repository);
+    final getJobs = makeGetJobs(repository);
+    final getRecommendedJobs = makeGetRecommendedJobs(repository);
+    final searchJobs = makeSearchJobs(repository);
+    final filterJobsBySkill = makeFilterJobsBySkill(repository);
+
+    // Application submission - handled in home feature
+    final submitApplicationUseCase = SubmitApplicationUseCase(repository);
+
     return BlocProvider(
-      create: (context) => HomeBloc()..add(LoadHomeData()),
+      create: (context) => HomeBloc(
+        getUserProfile: getUserProfile,
+        getJobs: getJobs,
+        getRecommendedJobs: getRecommendedJobs,
+        searchJobs: searchJobs,
+        filterJobsBySkill: filterJobsBySkill,
+        submitApplicationUseCase: submitApplicationUseCase,
+      )..add(LoadHomeData()),
       child: HomeScreenContent(onSearchTap: onSearchTap),
     );
   }
@@ -211,7 +242,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                                     child: SingleChildScrollView(
                                       scrollDirection: Axis.horizontal,
                                       child: Row(
-                                        children: state.user.skills.map((
+                                        children: state.user.primarySkills.map((
                                           skill,
                                         ) {
                                           final isSelected =

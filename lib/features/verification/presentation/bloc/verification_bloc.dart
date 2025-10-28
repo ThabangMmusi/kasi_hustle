@@ -1,152 +1,68 @@
-import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:equatable/equatable.dart';
-
-// ==================== EVENTS ====================
-
-abstract class VerificationEvent extends Equatable {
-  const VerificationEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class GoToStep extends VerificationEvent {
-  final int step;
-
-  const GoToStep(this.step);
-
-  @override
-  List<Object> get props => [step];
-}
-
-class SelfieCaptured extends VerificationEvent {
-  final File selfieImage;
-
-  const SelfieCaptured(this.selfieImage);
-
-  @override
-  List<Object> get props => [selfieImage];
-}
-
-class IdCaptured extends VerificationEvent {
-  final File idImage;
-
-  const IdCaptured(this.idImage);
-
-  @override
-  List<Object> get props => [idImage];
-}
-
-class SubmitVerification extends VerificationEvent {}
-
-// ==================== STATES ====================
-
-abstract class VerificationState extends Equatable {
-  final int currentStep;
-  final File? selfieImage;
-  final File? idImage;
-
-  const VerificationState({
-    required this.currentStep,
-    this.selfieImage,
-    this.idImage,
-  });
-
-  @override
-  List<Object?> get props => [currentStep, selfieImage, idImage];
-}
-
-class VerificationInitial extends VerificationState {
-  const VerificationInitial() : super(currentStep: 0);
-}
-
-class VerificationInProgress extends VerificationState {
-  const VerificationInProgress({
-    required super.currentStep,
-    super.selfieImage,
-    super.idImage,
-  });
-
-  VerificationInProgress copyWith({
-    int? currentStep,
-    File? selfieImage,
-    File? idImage,
-  }) {
-    return VerificationInProgress(
-      currentStep: currentStep ?? this.currentStep,
-      selfieImage: selfieImage ?? this.selfieImage,
-      idImage: idImage ?? this.idImage,
-    );
-  }
-}
-
-class VerificationUploading extends VerificationState {
-  const VerificationUploading({
-    required super.currentStep,
-    super.selfieImage,
-    super.idImage,
-  });
-}
-
-class VerificationSuccess extends VerificationState {
-  const VerificationSuccess({
-    required super.currentStep,
-    super.selfieImage,
-    super.idImage,
-  });
-}
-
-class VerificationFailure extends VerificationState {
-  final String message;
-
-  const VerificationFailure({
-    required super.currentStep,
-    required this.message,
-    super.selfieImage,
-    super.idImage,
-  });
-
-  @override
-  List<Object?> get props => [currentStep, message, selfieImage, idImage];
-}
-
-// ==================== BLOC ====================
+import 'package:kasi_hustle/core/services/user_profile_service.dart';
+import 'package:kasi_hustle/features/verification/domain/usecases/submit_verification_usecase.dart';
+import 'verification_event.dart';
+import 'verification_state.dart';
 
 class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
-  VerificationBloc() : super(const VerificationInitial()) {
-    on<GoToStep>(_onGoToStep);
-    on<SelfieCaptured>(_onSelfieCaptured);
-    on<IdCaptured>(_onIdCaptured);
-    on<SubmitVerification>(_onSubmitVerification);
-  }
+  final SubmitVerificationUseCase submitVerificationUseCase;
+  final UserProfileService userProfileService;
 
-  void _onGoToStep(GoToStep event, Emitter<VerificationState> emit) {
-    emit(
-      VerificationInProgress(
-        currentStep: event.step,
-        selfieImage: state.selfieImage,
-        idImage: state.idImage,
+  VerificationBloc({
+    required this.submitVerificationUseCase,
+    required this.userProfileService,
+  }) : super(const VerificationState()) {
+    on<StartVerification>(
+      (event, emit) =>
+          emit(state.copyWith(status: VerificationFlowStatus.instructions)),
+    );
+    on<SelfieCaptured>(
+      (event, emit) => emit(
+        state.copyWith(
+          status: VerificationFlowStatus.selfiePreview,
+          selfieImage: event.selfieImage,
+        ),
       ),
     );
+    on<IdCaptured>(
+      (event, emit) => emit(
+        state.copyWith(
+          status: VerificationFlowStatus.idPreview,
+          idImage: event.idImage,
+        ),
+      ),
+    );
+    on<RetakeSelfie>(
+      (event, emit) =>
+          emit(state.copyWith(status: VerificationFlowStatus.selfieCapture)),
+    );
+    on<RetakeId>(
+      (event, emit) =>
+          emit(state.copyWith(status: VerificationFlowStatus.idCapture)),
+    );
+    on<SubmitVerification>(_onSubmitVerification);
+    on<GoToPreviousStep>(_onGoToPreviousStep);
   }
 
-  void _onSelfieCaptured(
-    SelfieCaptured event,
+  void _onGoToPreviousStep(
+    GoToPreviousStep event,
     Emitter<VerificationState> emit,
   ) {
-    if (state is VerificationInProgress) {
-      final currentState = state as VerificationInProgress;
-      emit(
-        currentState.copyWith(selfieImage: event.selfieImage, currentStep: 2),
-      );
-    }
-  }
-
-  void _onIdCaptured(IdCaptured event, Emitter<VerificationState> emit) {
-    if (state is VerificationInProgress) {
-      final currentState = state as VerificationInProgress;
-      emit(currentState.copyWith(idImage: event.idImage, currentStep: 3));
+    switch (state.status) {
+      case VerificationFlowStatus.selfieCapture:
+        emit(state.copyWith(status: VerificationFlowStatus.instructions));
+        break;
+      case VerificationFlowStatus.selfiePreview:
+        emit(state.copyWith(status: VerificationFlowStatus.selfieCapture));
+        break;
+      case VerificationFlowStatus.idCapture:
+        emit(state.copyWith(status: VerificationFlowStatus.selfiePreview));
+        break;
+      case VerificationFlowStatus.idPreview:
+        emit(state.copyWith(status: VerificationFlowStatus.idCapture));
+        break;
+      default:
+        break;
     }
   }
 
@@ -154,42 +70,36 @@ class VerificationBloc extends Bloc<VerificationEvent, VerificationState> {
     SubmitVerification event,
     Emitter<VerificationState> emit,
   ) async {
-    if (state is VerificationInProgress) {
-      final currentState = state as VerificationInProgress;
+    if (state.selfieImage == null || state.idImage == null) {
       emit(
-        VerificationUploading(
-          currentStep: currentState.currentStep,
-          selfieImage: currentState.selfieImage,
-          idImage: currentState.idImage,
+        state.copyWith(
+          status: VerificationFlowStatus.failure,
+          errorMessage: 'Both selfie and ID images are required',
         ),
       );
+      return;
+    }
 
-      try {
-        // Simulate upload to Supabase Storage
-        await Future.delayed(const Duration(seconds: 3));
+    emit(state.copyWith(status: VerificationFlowStatus.uploading));
 
-        // In a real app:
-        // final selfieUrl = await uploadFile(currentState.selfieImage!);
-        // final idUrl = await uploadFile(currentState.idImage!);
-        // await supabase.from('users').update({'selfie_url': selfieUrl, 'id_url': idUrl, 'is_verified': true});
+    try {
+      final userId = userProfileService.currentUser?.id ?? 'unknown';
 
-        emit(
-          VerificationSuccess(
-            currentStep: currentState.currentStep,
-            selfieImage: currentState.selfieImage,
-            idImage: currentState.idImage,
-          ),
-        );
-      } catch (e) {
-        emit(
-          VerificationFailure(
-            currentStep: currentState.currentStep,
-            message: 'Upload failed. Please try again.',
-            selfieImage: currentState.selfieImage,
-            idImage: currentState.idImage,
-          ),
-        );
-      }
+      // Submit verification through use case
+      await submitVerificationUseCase(
+        userId: userId,
+        selfieImage: state.selfieImage!,
+        idImage: state.idImage!,
+      );
+
+      emit(state.copyWith(status: VerificationFlowStatus.success));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: VerificationFlowStatus.failure,
+          errorMessage: 'Verification failed: ${e.toString()}',
+        ),
+      );
     }
   }
 }

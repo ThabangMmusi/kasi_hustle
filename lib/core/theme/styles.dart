@@ -138,11 +138,34 @@ class Shadows {
     ),
   ];
 
+  /// Shadow pointing upward - for bottom sheets or elements above other content
+  static final List<BoxShadow> universalUp = [
+    BoxShadow(
+      color: _defaultShadowColor.withValues(alpha: 0.08),
+      blurRadius: 4,
+      offset: const Offset(0, -1),
+    ),
+    BoxShadow(
+      color: _defaultShadowColor.withValues(alpha: 0.06),
+      blurRadius: 12,
+      offset: const Offset(0, -4),
+    ),
+  ];
+
   static final List<BoxShadow> small = [
     BoxShadow(
       color: _defaultShadowColor.withValues(alpha: 0.07),
       blurRadius: 3,
       offset: const Offset(0, 1),
+    ),
+  ];
+
+  /// Small shadow pointing upward
+  static final List<BoxShadow> smallUp = [
+    BoxShadow(
+      color: _defaultShadowColor.withValues(alpha: 0.07),
+      blurRadius: 3,
+      offset: const Offset(0, -1),
     ),
   ];
 
@@ -159,6 +182,20 @@ class Shadows {
     ),
   ];
 
+  /// Medium shadow pointing upward
+  static final List<BoxShadow> mediumUp = [
+    BoxShadow(
+      color: _defaultShadowColor.withValues(alpha: 0.08),
+      blurRadius: 8,
+      offset: const Offset(0, -4),
+    ),
+    BoxShadow(
+      color: _defaultShadowColor.withValues(alpha: 0.06),
+      blurRadius: 12,
+      offset: const Offset(0, -2),
+    ),
+  ];
+
   static final List<BoxShadow> large = [
     BoxShadow(
       color: _defaultShadowColor.withValues(alpha: 0.1),
@@ -169,6 +206,20 @@ class Shadows {
       color: _defaultShadowColor.withValues(alpha: 0.08),
       blurRadius: 24,
       offset: const Offset(0, 4),
+    ),
+  ];
+
+  /// Large shadow pointing upward
+  static final List<BoxShadow> largeUp = [
+    BoxShadow(
+      color: _defaultShadowColor.withValues(alpha: 0.1),
+      blurRadius: 16,
+      offset: const Offset(0, -8),
+    ),
+    BoxShadow(
+      color: _defaultShadowColor.withValues(alpha: 0.08),
+      blurRadius: 24,
+      offset: const Offset(0, -4),
     ),
   ];
 }

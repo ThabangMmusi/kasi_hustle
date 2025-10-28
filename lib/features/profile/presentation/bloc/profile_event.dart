@@ -1,19 +1,13 @@
+import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
+
 abstract class ProfileEvent {}
 
 class LoadProfile extends ProfileEvent {}
 
 class UpdateProfile extends ProfileEvent {
-  final String name;
-  final String? phone;
-  final List<String> skills;
-  final String? bio;
+  final UserProfile profile;
 
-  UpdateProfile({
-    required this.name,
-    this.phone,
-    required this.skills,
-    this.bio,
-  });
+  UpdateProfile({required this.profile});
 }
 
 class UploadProfileImage extends ProfileEvent {
