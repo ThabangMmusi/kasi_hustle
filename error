@@ -1,261 +1,19 @@
-
-I/flutter ( 4992): 📡 Request body: {"origin":{"location":{"latLng":{"latitude":-28.7492,"longitude":24.7662}}},"destination":{"location":{"latLng":{"latitude":-28.735,"longitude":24.768}}},"travelMode":"WALK","computeAlternativeRoutes":false,"languageCode":"en-US","units":"METRIC"}
-
-════════ Exception caught by widgets library ═══════════════════════════════════
-The following assertion was thrown while applying parent data.:
-Incorrect use of ParentDataWidget.
-The ParentDataWidget Expanded(flex: 1) wants to apply ParentData of type FlexParentData to a RenderObject, which has been set up to accept ParentData of incompatible type BoxParentData.
-Usually, this means that the Expanded widget has the wrong ancestor RenderObjectWidget. Typically, Expanded widgets are placed directly inside Flex widgets.
-The offending Expanded is currently placed inside a Padding widget.
-The ownership chain for the RenderObject that received the incompatible parent data was:
-  Stack ← OfflineMapWidget ← Expanded ← Padding ← Stack ← Padding ← DecoratedBox ← ConstrainedBox ← Container ← JobDirectionBottomSheetContent ← ⋯
-
-When the exception was thrown, this was the stack:
-#0      RenderObjectElement._updateParentData.<anonymous closure> (package:flutter/src/widgets/framework.dart:6785:11)
-framework.dart:6785
-#1      RenderObjectElement._updateParentData (package:flutter/src/widgets/framework.dart:6802:6)
-framework.dart:6802
-#2      RenderObjectElement.attachRenderObject (package:flutter/src/widgets/framework.dart:6848:7)
-framework.dart:6848
-#3      RenderObjectElement.mount (package:flutter/src/widgets/framework.dart:6706:5)
-framework.dart:6706
-#4      MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7176:11)
-framework.dart:7176
-...     Normal element mounting (18 frames)
-#22     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4548:16)
-framework.dart:4548
-#23     MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7169:36)
-framework.dart:7169
-#24     MultiChildRenderObjectElement.mount (package:flutter/src/widgets/framework.dart:7185:32)
-framework.dart:7185
-...     Normal element mounting (332 frames)
-#356    Element.inflateWidget (package:flutter/src/widgets/framework.dart:4548:16)
-framework.dart:4548
-#357    MultiChildRenderObjectElement.inflateWidget (package:flutter/src/widgets/framework.dart:7169:36)
-framework.dart:7169
-#358    Element.updateChild (package:flutter/src/widgets/framework.dart:4004:18)
-framework.dart:4004
-#359    Element.updateChildren (package:flutter/src/widgets/framework.dart:4203:32)
-framework.dart:4203
-#360    MultiChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7202:17)
-framework.dart:7202
-#361    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#362    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#363    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
-framework.dart:5884
-#364    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#365    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
-framework.dart:5909
-#366    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#367    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#368    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#369    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
-framework.dart:6051
-#370    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#371    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#372    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#373    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
-framework.dart:6051
-#374    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
-inherited_notifier.dart:108
-#375    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#376    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#377    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
-framework.dart:5884
-#378    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#379    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
-framework.dart:5909
-#380    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#381    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#382    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#383    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
-framework.dart:6051
-#384    _InheritedNotifierElement.update (package:flutter/src/widgets/inherited_notifier.dart:108:11)
-inherited_notifier.dart:108
-#385    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#386    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#387    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
-framework.dart:5884
-#388    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#389    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
-framework.dart:5909
-#390    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#391    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#392    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
-framework.dart:5884
-#393    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#394    StatefulElement.update (package:flutter/src/widgets/framework.dart:5909:5)
-framework.dart:5909
-#395    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#396    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7025:14)
-framework.dart:7025
-#397    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#398    SingleChildRenderObjectElement.update (package:flutter/src/widgets/framework.dart:7025:14)
-framework.dart:7025
-#399    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#400    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#401    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#402    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
-framework.dart:6051
-#403    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#404    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#405    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#406    ProxyElement.update (package:flutter/src/widgets/framework.dart:6051:5)
-framework.dart:6051
-#407    Element.updateChild (package:flutter/src/widgets/framework.dart:3982:15)
-framework.dart:3982
-#408    ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5747:16)
-framework.dart:5747
-#409    StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5884:11)
-framework.dart:5884
-#410    Element.rebuild (package:flutter/src/widgets/framework.dart:5435:7)
-framework.dart:5435
-#411    BuildScope._tryRebuild (package:flutter/src/widgets/framework.dart:2695:15)
-framework.dart:2695
-#412    BuildScope._flushDirtyElements (package:flutter/src/widgets/framework.dart:2752:11)
-framework.dart:2752
-#413    BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3056:18)
-framework.dart:3056
-#414    WidgetsBinding.drawFrame (package:flutter/src/widgets/binding.dart:1259:21)
-binding.dart:1259
-#415    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:495:5)
-binding.dart:495
-#416    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1434:15)
-binding.dart:1434
-#417    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1347:9)
-binding.dart:1347
-#418    SchedulerBinding._handleDrawFrame (package:flutter/src/scheduler/binding.dart:1200:5)
-binding.dart:1200
-#419    _invoke (dart:ui/hooks.dart:330:13)
-hooks.dart:330
-#420    PlatformDispatcher._drawFrame (dart:ui/platform_dispatcher.dart:444:5)
-platform_dispatcher.dart:444
-#421    _drawFrame (dart:ui/hooks.dart:302:31)
-hooks.dart:302
-════════════════════════════════════════════════════════════════════════════════
-D/MapsInitializer( 4992): preferredRenderer: null
-D/zzcc    ( 4992): preferredRenderer: null
-I/Google Android Maps SDK( 4992): Google Play services package version: 254232027
-I/Google Android Maps SDK( 4992): Google Play services maps renderer version(maps_core): 253425402
-9
-W/ProxyAndroidLoggerBackend( 4992): Too many Flogger logs received before configuration. Dropping old logs.
-I/PlatformViewsController( 4992): Using hybrid composition for platform view: 27
-14
-W/ProxyAndroidLoggerBackend( 4992): Too many Flogger logs received before configuration. Dropping old logs.
-E/gralloc4( 4992): ERROR: Format allocation info not found for format: 3b
-E/gralloc4( 4992): ERROR: Format allocation info not found for format: 0
-E/gralloc4( 4992): Invalid base format! req_base_format = 0x0, req_format = 0x3b, type = 0x0
-E/gralloc4( 4992): ERROR: Unrecognized and/or unsupported format 0x3b and usage 0x300
-E/Gralloc4( 4992): isSupported(1, 1, 59, 1, ...) failed with 5
-E/GraphicBufferAllocator( 4992): Failed to allocate (4 x 4) layerCount 1 format 59 usage 300: 5
-E/AHardwareBuffer( 4992): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -5), handle=0x0
-E/gralloc4( 4992): ERROR: Format allocation info not found for format: 3b
-E/gralloc4( 4992): ERROR: Format allocation info not found for format: 0
-E/gralloc4( 4992): Invalid base format! req_base_format = 0x0, req_format = 0x3b, type = 0x0
-E/gralloc4( 4992): ERROR: Unrecognized and/or unsupported format 0x3b and usage 0x300
-E/Gralloc4( 4992): isSupported(1, 1, 59, 1, ...) failed with 5
-E/GraphicBufferAllocator( 4992): Failed to allocate (4 x 4) layerCount 1 format 59 usage 300: 5
-E/AHardwareBuffer( 4992): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -5), handle=0x0
+ 
 10
 W/ProxyAndroidLoggerBackend( 4992): Too many Flogger logs received before configuration. Dropping old logs.
-I/Choreographer( 4992): Skipped 42 frames!  The application may be doing too much work on its main thread.
-I/GoogleMapController( 4992): Installing custom TextureView driven invalidator.
-E/GoogleMapController( 4992): Cannot enable MyLocation layer as location permissions are not granted
-I/OpenGLRenderer( 4992): Davey! duration=737ms; Flags=0, FrameTimelineVsyncId=16838786, IntendedVsync=79889673170892, Vsync=79890372140226, InputEventId=689016948, HandleInputStart=79890386818087, AnimationStart=79890386825049, PerformTraversalsStart=79890387063318, DrawStart=79890388496356, FrameDeadline=79889689837558, FrameInterval=79890386310395, FrameStartTime=16642127, SyncQueued=79890393681856, SyncStart=79890394160587, IssueDrawCommandsStart=79890394399741, SwapBuffers=79890402606741, FrameCompleted=79890411626472, DequeueBufferDuration=27923, QueueBufferDuration=484000, GpuCompleted=79890411626472, SwapBuffersCompleted=79890403902779, DisplayPresentTime=79415240968542, CommandSubmissionCompleted=79890402606741, 
-8
-W/ProxyAndroidLoggerBackend( 4992): Too many Flogger logs received before configuration. Dropping old logs.
-W/.rva.kasihustle( 4992): Long monitor contention with owner androidmapsapi-TilePrep_76 (12587) at void m140.eti.run()(:com.google.android.gms.policy_maps_core_dynamite@253425407@253425402021.797495247.797495247:695) waiters=1 in void m140.eti.run() for 158ms
-2
-W/ProxyAndroidLoggerBackend( 4992): Too many Flogger logs received before configuration. Dropping old logs.
-I/flutter ( 4992): 📥 Response status: 200
-I/flutter ( 4992): 📥 Response body: {
-I/flutter ( 4992):   "routes": [
-I/flutter ( 4992):     {
-I/flutter ( 4992):       "distanceMeters": 1881,
-I/flutter ( 4992):       "duration": "1580s",
-I/flutter ( 4992):       "polyline": {
-I/flutter ( 4992):         "encodedPolyline": "bannDs`dvCy@GyBm@k@Yi@q@c@qAe@eDg@iA}EdCQ@kP{G[CwD|@_@uByAtAWZe@Xs@Tu@H}@Am@AiGk@iCE_CBcBIyAOkDBsDH@xA"
-I/flutter ( 4992):       }
-I/flutter ( 4992):     }
-I/flutter ( 4992):   ]
-I/flutter ( 4992): }
-I/flutter ( 4992): 
-I/flutter ( 4992): ✅ Parsed JSON data: {routes: [{distanceMeters: 1881, duration: 1580s, polyline: {encodedPolyline: bannDs`dvCy@GyBm@k@Yi@q@c@qAe@eDg@iA}EdCQ@kP{G[CwD|@_@uByAtAWZe@Xs@Tu@H}@Am@AiGk@iCE_CBcBIyAOkDBsDH@xA}}]}
-I/flutter ( 4992): 🗺️ Routes available: 1
-I/flutter ( 4992): 📍 Route data: {distanceMeters: 1881, duration: 1580s, polyline: {encodedPolyline: bannDs`dvCy@GyBm@k@Yi@q@c@qAe@eDg@iA}EdCQ@kP{G[CwD|@_@uByAtAWZe@Xs@Tu@H}@Am@AiGk@iCE_CBcBIyAOkDBsDH@xA}}
-I/flutter ( 4992): 📏 Distance: 1881 meters
-I/flutter ( 4992): ⏱️ Duration: 1580 seconds
-I/flutter ( 4992): 🛣️ Polyline length: 102 chars
-I/flutter ( 4992): 📌 Decoded 29 route points
-I/flutter ( 4992): ✅ Route updated successfully!
-I/.rva.kasihustle( 4992): Background concurrent copying GC freed 5273KB AllocSpace bytes, 101(5308KB) LOS objects, 49% free, 19MB/39MB, paused 183us,114us total 223.548ms
-
-════════ Exception caught by widgets library ═══════════════════════════════════
-Incorrect use of ParentDataWidget.
-════════════════════════════════════════════════════════════════════════════════
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~fR7SrcElk_qfGTwKYmP70g==/com.openai.chatgpt-LvkaSP0ncAVng4-0vi0Now==/base.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~fR7SrcElk_qfGTwKYmP70g==/com.openai.chatgpt-LvkaSP0ncAVng4-0vi0Now==/split_config.armeabi_v7a.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~fR7SrcElk_qfGTwKYmP70g==/com.openai.chatgpt-LvkaSP0ncAVng4-0vi0Now==/split_config.en.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~fR7SrcElk_qfGTwKYmP70g==/com.openai.chatgpt-LvkaSP0ncAVng4-0vi0Now==/split_config.xxhdpi.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~WkCE5-BQF6haAR7LPQJKlQ==/com.truecaller-7gaq6seW3S878k6rlzou-g==/base.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~WkCE5-BQF6haAR7LPQJKlQ==/com.truecaller-7gaq6seW3S878k6rlzou-g==/split_config.armeabi_v7a.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~WkCE5-BQF6haAR7LPQJKlQ==/com.truecaller-7gaq6seW3S878k6rlzou-g==/split_config.xxhdpi.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~WkCE5-BQF6haAR7LPQJKlQ==/com.truecaller-7gaq6seW3S878k6rlzou-g==/split_insights_category_model.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~WkCE5-BQF6haAR7LPQJKlQ==/com.truecaller-7gaq6seW3S878k6rlzou-g==/split_insights_category_model.config.armeabi_v7a.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~zgmPr36VXuIb9PkY_ZljOg==/com.microsoft.office.officehubrow-UBwoitsLUXrxZowvbJUiHg==/base.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~zgmPr36VXuIb9PkY_ZljOg==/com.microsoft.office.officehubrow-UBwoitsLUXrxZowvbJUiHg==/split_config.en.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~zgmPr36VXuIb9PkY_ZljOg==/com.microsoft.office.officehubrow-UBwoitsLUXrxZowvbJUiHg==/split_config.xxhdpi.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~zgmPr36VXuIb9PkY_ZljOg==/com.microsoft.office.officehubrow-UBwoitsLUXrxZowvbJUiHg==/split_dynamic_videoplayback_module.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~zgmPr36VXuIb9PkY_ZljOg==/com.microsoft.office.officehubrow-UBwoitsLUXrxZowvbJUiHg==/split_lenssampledoc.apk' with 1 weak references
-W/.rva.kasihustle( 4992): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~zgmPr36VXuIb9PkY_ZljOg==/com.microsoft.office.officehubrow-UBwoitsLUXrxZowvbJUiHg==/split_mainassetpack.apk' with 1 weak references
-I/flutter ( 4992): ! Location permission denied, skipping cache
-I/flutter ( 4992): 🗺️ Map created successfully!
-I/Choreographer( 4992): Skipped 64 frames!  The application may be doing too much work on its main thread.
-I/OpenGLRenderer( 4992): Davey! duration=1085ms; Flags=0, FrameTimelineVsyncId=16838860, IntendedVsync=79890771227206, Vsync=79891836189126, InputEventId=0, HandleInputStart=79891839477471, AnimationStart=79891839485932, PerformTraversalsStart=79891839692701, DrawStart=79891840415086, FrameDeadline=79890787893872, FrameInterval=79891838788394, FrameStartTime=16640030, SyncQueued=79891842245471, SyncStart=79891845678086, IssueDrawCommandsStart=79891845951624, SwapBuffers=79891851953894, FrameCompleted=79891860584971, DequeueBufferDuration=84923, QueueBufferDuration=749115, GpuCompleted=79891860584971, SwapBuffersCompleted=79891853661201, DisplayPresentTime=79415440635350, CommandSubmissionCompleted=79891851953894, 
-11
-W/ProxyAndroidLoggerBackend( 4992): Too many Flogger logs received before configuration. Dropping old logs.
 I/flutter ( 4992): 🚶 Calculating route with travel mode: DRIVE
-I/flutter ( 4992): 📡 Request body: {"origin":{"location":{"latLng":{"latitude":-28.7492,"longitude":24.7662}}},"destination":{"location":{"latLng":{"latitude":-28.735,"longitude":24.768}}},"travelMode":"DRIVE","computeAlternativeRoutes":false,"languageCode":"en-US","units":"METRIC","routingPreference":"TRAFFIC_AWARE"}
+I/flutter ( 4992): 📡 Request body: {"origin":{"location":{"latLng":{"latitude":-28.7492,"longitude":24.7662}}},"destination":{"location":{"latLng":{"latitude":-28.735,"longitude":24.768}}},"travelMode":"DRIVE","routingPreference":"TRAFFIC_AWARE","computeAlternativeRoutes":false,"languageCode":"en-US","units":"METRIC"}
 
 ════════ Exception caught by widgets library ═══════════════════════════════════
 Incorrect use of ParentDataWidget.
 ════════════════════════════════════════════════════════════════════════════════
-I/.rva.kasihustle( 4992): NativeAlloc concurrent copying GC freed 9906KB AllocSpace bytes, 85(9872KB) LOS objects, 49% free, 14MB/28MB, paused 172us,83us total 127.299ms
+I/.rva.kasihustle( 4992): NativeAlloc concurrent copying GC freed 9713KB AllocSpace bytes, 90(9732KB) LOS objects, 49% free, 14MB/29MB, paused 136us,89us total 118.117ms
 I/flutter ( 4992): 📥 Response status: 200
 I/flutter ( 4992): 📥 Response body: {
 I/flutter ( 4992):   "routes": [
 I/flutter ( 4992):     {
 I/flutter ( 4992):       "distanceMeters": 2089,
-I/flutter ( 4992):       "duration": "268s",
+I/flutter ( 4992):       "duration": "276s",
 I/flutter ( 4992):       "polyline": {
 I/flutter ( 4992):         "encodedPolyline": "bannDs`dvCy@GM@{BI_@]w@gAMg@CU?_@e@eDsFuMW]uHcI{@fAgJ`KgA`AIPyAtAWZe@Xs@Tu@H}@Am@AiGk@iCE_CBcBIyAOkDBsDH@xA"
 I/flutter ( 4992):       }
@@ -263,11 +21,11 @@ I/flutter ( 4992):     }
 I/flutter ( 4992):   ]
 I/flutter ( 4992): }
 I/flutter ( 4992): 
-I/flutter ( 4992): ✅ Parsed JSON data: {routes: [{distanceMeters: 2089, duration: 268s, polyline: {encodedPolyline: bannDs`dvCy@GM@{BI_@]w@gAMg@CU?_@e@eDsFuMW]uHcI{@fAgJ`KgA`AIPyAtAWZe@Xs@Tu@H}@Am@AiGk@iCE_CBcBIyAOkDBsDH@xA}}]}
+I/flutter ( 4992): ✅ Parsed JSON data: {routes: [{distanceMeters: 2089, duration: 276s, polyline: {encodedPolyline: bannDs`dvCy@GM@{BI_@]w@gAMg@CU?_@e@eDsFuMW]uHcI{@fAgJ`KgA`AIPyAtAWZe@Xs@Tu@H}@Am@AiGk@iCE_CBcBIyAOkDBsDH@xA}}]}
 I/flutter ( 4992): 🗺️ Routes available: 1
-I/flutter ( 4992): 📍 Route data: {distanceMeters: 2089, duration: 268s, polyline: {encodedPolyline: bannDs`dvCy@GM@{BI_@]w@gAMg@CU?_@e@eDsFuMW]uHcI{@fAgJ`KgA`AIPyAtAWZe@Xs@Tu@H}@Am@AiGk@iCE_CBcBIyAOkDBsDH@xA}}
+I/flutter ( 4992): 📍 Route data: {distanceMeters: 2089, duration: 276s, polyline: {encodedPolyline: bannDs`dvCy@GM@{BI_@]w@gAMg@CU?_@e@eDsFuMW]uHcI{@fAgJ`KgA`AIPyAtAWZe@Xs@Tu@H}@Am@AiGk@iCE_CBcBIyAOkDBsDH@xA}}
 I/flutter ( 4992): 📏 Distance: 2089 meters
-I/flutter ( 4992): ⏱️ Duration: 268 seconds
+I/flutter ( 4992): ⏱️ Duration: 276 seconds
 I/flutter ( 4992): 🛣️ Polyline length: 107 chars
 I/flutter ( 4992): 📌 Decoded 32 route points
 I/flutter ( 4992): ✅ Route updated successfully!
@@ -276,18 +34,29 @@ I/flutter ( 4992): ✅ Route updated successfully!
 Incorrect use of ParentDataWidget.
 ════════════════════════════════════════════════════════════════════════════════
 I/flutter ( 4992): 🚶 Calculating route with travel mode: BICYCLE
-I/flutter ( 4992): 📡 Request body: {"origin":{"location":{"latLng":{"latitude":-28.7492,"longitude":24.7662}}},"destination":{"location":{"latLng":{"latitude":-28.735,"longitude":24.768}}},"travelMode":"BICYCLE","computeAlternativeRoutes":false,"languageCode":"en-US","units":"METRIC"}
+I/flutter ( 4992): 📡 Request body: {"origin":{"location":{"latLng":{"latitude":-28.7492,"longitude":24.7662}}},"destination":{"location":{"latLng":{"latitude":-28.735,"longitude":24.768}}},"travelMode":"BICYCLE","routingPreference":"TRAFFIC_AWARE","computeAlternativeRoutes":false,"languageCode":"en-US","units":"METRIC"}
 
 ════════ Exception caught by widgets library ═══════════════════════════════════
 Incorrect use of ParentDataWidget.
 ════════════════════════════════════════════════════════════════════════════════
-I/.rva.kasihustle( 4992): NativeAlloc concurrent copying GC freed 830KB AllocSpace bytes, 10(160KB) LOS objects, 49% free, 13MB/27MB, paused 239us,80us total 105.418ms
-I/flutter ( 4992): 📥 Response status: 200
-I/flutter ( 4992): 📥 Response body: {}
+I/.rva.kasihustle( 4992): NativeAlloc concurrent copying GC freed 1125KB AllocSpace bytes, 14(464KB) LOS objects, 49% free, 13MB/27MB, paused 205us,84us total 100.938ms
+I/flutter ( 4992): 📥 Response status: 400
+I/flutter ( 4992): 📥 Response body: {
+I/flutter ( 4992):   "error": {
+I/flutter ( 4992):     "code": 400,
+I/flutter ( 4992):     "message": "Routing preference cannot be set for WALK or BICYCLE routing mode.",
+I/flutter ( 4992):     "status": "INVALID_ARGUMENT"
+I/flutter ( 4992):   }
+I/flutter ( 4992): }
 I/flutter ( 4992): 
-I/flutter ( 4992): ✅ Parsed JSON data: {}
-I/flutter ( 4992): 🗺️ Routes available: 0
-I/flutter ( 4992): ❌ No routes found in response
+I/flutter ( 4992): ❌ Routes API error: 400 - {
+I/flutter ( 4992):   "error": {
+I/flutter ( 4992):     "code": 400,
+I/flutter ( 4992):     "message": "Routing preference cannot be set for WALK or BICYCLE routing mode.",
+I/flutter ( 4992):     "status": "INVALID_ARGUMENT"
+I/flutter ( 4992):   }
+I/flutter ( 4992): }
+I/flutter ( 4992): 
 I/flutter ( 4992): ! Falling back to straight-line calculation
 
 ════════ Exception caught by widgets library ═══════════════════════════════════
