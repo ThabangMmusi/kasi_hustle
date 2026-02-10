@@ -13,6 +13,7 @@ import 'package:kasi_hustle/features/applications/presentation/widgets/offline_m
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:kasi_hustle/core/config/env_config.dart';
+import 'package:kasi_hustle/features/applications/presentation/widgets/bottom_sheet_header.dart';
 
 class JobDirectionBottomSheet extends StatelessWidget {
   final Job job;
@@ -177,6 +178,10 @@ class _JobDirectionBottomSheetContentState
       // Only add routingPreference for DRIVE mode
       if (_currentTravelMode == TravelMode.drive) {
         requestData['routingPreference'] = 'TRAFFIC_AWARE';
+        debugPrint('🚗 Adding traffic aware preference for DRIVE mode');
+      } else {
+        // Ensure it's not set for other modes
+        requestData.remove('routingPreference');
       }
 
       final requestBody = json.encode(requestData);
@@ -526,77 +531,10 @@ class _JobDirectionBottomSheetContentState
               ),
 
               // Header with job info
-              Container(
-                padding: EdgeInsets.all(Insets.lg),
-                decoration: BoxDecoration(color: colorScheme.surface),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [
-                            colorScheme.primary,
-                            colorScheme.primaryContainer,
-                          ],
-                        ),
-                      ),
-                      child: Icon(
-                        Ionicons.briefcase,
-                        color: colorScheme.onPrimary,
-                        size: IconSizes.med,
-                      ),
-                    ),
-                    HSpace.med,
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          UiText(
-                            text: widget.job.title,
-                            style: TextStyles.titleMedium.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Icon(
-                                Ionicons.location_outline,
-                                size: IconSizes.xs,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              HSpace.xs,
-                              Expanded(
-                                child: UiText(
-                                  text: widget.job.location,
-                                  style: TextStyles.bodySmall.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(Ionicons.navigate, color: colorScheme.primary),
-                      onPressed: () {
-                        if (_userLocation != null && _mapController != null) {
-                          _updateCameraToBounds();
-                        }
-                      },
-                      tooltip: 'Show my location',
-                    ),
-                  ],
-                ),
-              ),
-              Divider(
-                height: 1,
-                color: colorScheme.outline.withValues(alpha: 0.2),
+              // Header with job info
+              BottomSheetHeader(
+                title: widget.job.title,
+                subtitle: widget.job.location,
               ),
             ],
           ),

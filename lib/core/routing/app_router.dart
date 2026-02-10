@@ -13,6 +13,8 @@ import 'package:kasi_hustle/features/search/presentation/screens/search_screen.d
 import 'package:kasi_hustle/features/applications/presentation/screens/applications_screen.dart';
 import 'package:kasi_hustle/features/applications/presentation/screens/my_applicion_screen.dart';
 import 'package:kasi_hustle/features/profile/presentation/screens/profile_screen.dart';
+import 'package:kasi_hustle/features/menu/presentation/screens/menu_screen.dart';
+import 'package:kasi_hustle/features/settings/presentation/screens/settings_screen.dart';
 import 'package:kasi_hustle/features/business_home/presentation/screens/business_home_screen.dart';
 import 'package:kasi_hustle/features/post_job/presentation/screens/post_job_screen.dart';
 
@@ -31,6 +33,8 @@ class AppRoutes {
   static const search = '/search';
   static const applications = '/applications';
   static const profile = '/profile';
+  static const menu = '/menu';
+  static const settings = '/settings';
 
   // Business routes
   static const businessHome = '/business';
@@ -193,67 +197,100 @@ GoRouter createAppRouter(AppBloc appBloc) {
         builder: (context, state) => const VerificationScreen(),
       ),
 
-      // Main app routes with bottom navigation (for hustlers)
-      ShellRoute(
-        navigatorKey: shellNavigatorKey,
-        builder: (context, state, child) {
+      GoRoute(
+        path: AppRoutes.profile,
+        name: 'profile',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        name: 'settings',
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => const SettingsScreen(),
+      ),
+
+      // Main app routes with stateful shell (indexed stack for state preservation)
+      StatefulShellRoute.indexedStack(
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state, navigationShell) {
           final isHustler =
               UserProfileService().currentUser?.userType == 'hustler';
-
-          return MainLayout(isHustler: isHustler, child: child);
+          return MainLayout(
+            isHustler: isHustler,
+            navigationShell: navigationShell,
+          );
         },
-        routes: [
-          GoRoute(
-            path: AppRoutes.home,
-            name: 'home',
-            pageBuilder: (context, state) => NoTransitionPage(
-              child: HomeScreen(
-                onSearchTap: () => context.go(AppRoutes.search),
+        branches: [
+          // Branch 0: Home
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.home,
+                name: 'home',
+                pageBuilder: (context, state) => NoTransitionPage(
+                  child: HomeScreen(
+                    onSearchTap: () => context.go(AppRoutes.search),
+                  ),
+                ),
               ),
-            ),
+              // Branch-specific business route if needed, but keeping it flat for now
+              GoRoute(
+                path: AppRoutes.businessHome,
+                name: 'businessHome',
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: BusinessHomeScreen()),
+              ),
+            ],
           ),
 
-          GoRoute(
-            path: AppRoutes.search,
-            name: 'search',
-            pageBuilder: (context, state) =>
-                const NoTransitionPage(child: SearchScreen()),
+          // Branch 1: Search / Post Job
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.search,
+                name: 'search',
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: SearchScreen()),
+              ),
+              GoRoute(
+                path: AppRoutes.postJob,
+                name: 'postJob',
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: CreateJobScreen()),
+              ),
+            ],
           ),
 
-          GoRoute(
-            path: AppRoutes.applications,
-            name: 'applications',
-            pageBuilder: (context, state) {
-              final isHustler =
-                  UserProfileService().currentUser?.userType == 'hustler';
-              return NoTransitionPage(
-                child: isHustler
-                    ? const MyApplicationsScreen()
-                    : const ApplicationsScreen(),
-              );
-            },
+          // Branch 2: Applications
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.applications,
+                name: 'applications',
+                pageBuilder: (context, state) {
+                  final isHustler =
+                      UserProfileService().currentUser?.userType == 'hustler';
+                  return NoTransitionPage(
+                    child: isHustler
+                        ? const MyApplicationsScreen()
+                        : const ApplicationsScreen(),
+                  );
+                },
+              ),
+            ],
           ),
 
-          GoRoute(
-            path: AppRoutes.profile,
-            name: 'profile',
-            pageBuilder: (context, state) =>
-                const NoTransitionPage(child: ProfileScreen()),
-          ),
-
-          // Business routes
-          GoRoute(
-            path: AppRoutes.businessHome,
-            name: 'businessHome',
-            pageBuilder: (context, state) =>
-                const NoTransitionPage(child: BusinessHomeScreen()),
-          ),
-
-          GoRoute(
-            path: AppRoutes.postJob,
-            name: 'postJob',
-            pageBuilder: (context, state) =>
-                const NoTransitionPage(child: CreateJobScreen()),
+          // Branch 3: Menu
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.menu,
+                name: 'menu',
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: MenuScreen()),
+              ),
+            ],
           ),
         ],
       ),

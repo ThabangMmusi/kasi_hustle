@@ -69,10 +69,8 @@ class MagicLinkDialog extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             label: 'Got it!',
             style: ButtonStyle(
-              backgroundColor: MaterialStatePropertyAll(
-                const Color(0xFFF4EDE3),
-              ),
-              foregroundColor: MaterialStatePropertyAll(Colors.black),
+              backgroundColor: WidgetStatePropertyAll(const Color(0xFFF4EDE3)),
+              foregroundColor: WidgetStatePropertyAll(Colors.black),
             ),
           ),
         ],

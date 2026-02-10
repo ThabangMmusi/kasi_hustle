@@ -46,10 +46,10 @@ class PrimaryBtn extends StatelessWidget {
 
     // Add balanced padding and proper colors
     effectiveStyle = effectiveStyle.copyWith(
-      padding: MaterialStatePropertyAll(
+      padding: WidgetStatePropertyAll(
         EdgeInsets.symmetric(horizontal: Insets.lg, vertical: Insets.med),
       ),
-      foregroundColor: MaterialStatePropertyAll(
+      foregroundColor: WidgetStatePropertyAll(
         Theme.of(context).colorScheme.surface,
       ),
     );

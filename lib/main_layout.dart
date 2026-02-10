@@ -2,15 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
-import 'package:kasi_hustle/core/routing/app_router.dart';
+import 'package:kasi_hustle/features/search/presentation/controllers/search_focus_controller.dart';
 
 // ==================== MAIN LAYOUT WITH BOTTOM NAV ====================
 
 class MainLayout extends StatefulWidget {
-  final Widget child;
+  final StatefulNavigationShell navigationShell;
   final bool isHustler;
 
-  const MainLayout({super.key, required this.child, this.isHustler = true});
+  const MainLayout({
+    super.key,
+    required this.navigationShell,
+    this.isHustler = true,
+  });
 
   @override
   State<MainLayout> createState() => _MainLayoutState();
@@ -18,54 +22,16 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   int _calculateSelectedIndex(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-
-    if (widget.isHustler) {
-      if (location == AppRoutes.home) return 0;
-      if (location == AppRoutes.search) return 1;
-      if (location == AppRoutes.applications) return 2;
-      if (location == AppRoutes.profile) return 3;
-    } else {
-      if (location == AppRoutes.businessHome) return 0;
-      if (location == AppRoutes.postJob) return 1;
-      if (location == AppRoutes.applications) return 2;
-      if (location == AppRoutes.profile) return 3;
-    }
-
-    return 0;
+    return widget.navigationShell.currentIndex;
   }
 
   void _onItemTapped(int index) {
-    if (widget.isHustler) {
-      switch (index) {
-        case 0:
-          context.go(AppRoutes.home);
-          break;
-        case 1:
-          context.go(AppRoutes.search);
-          break;
-        case 2:
-          context.go(AppRoutes.applications);
-          break;
-        case 3:
-          context.go(AppRoutes.profile);
-          break;
-      }
-    } else {
-      switch (index) {
-        case 0:
-          context.go(AppRoutes.businessHome);
-          break;
-        case 1:
-          context.go(AppRoutes.postJob);
-          break;
-        case 2:
-          context.go(AppRoutes.applications);
-          break;
-        case 3:
-          context.go(AppRoutes.profile);
-          break;
-      }
+    widget.navigationShell.goBranch(
+      index,
+      initialLocation: index == widget.navigationShell.currentIndex,
+    );
+    if (index == 1) {
+      SearchFocusController().requestFocus();
     }
   }
 
@@ -76,7 +42,7 @@ class _MainLayoutState extends State<MainLayout> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: widget.child,
+      body: widget.navigationShell,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: colorScheme.surface,
@@ -111,9 +77,9 @@ class _MainLayoutState extends State<MainLayout> {
                         index: 2,
                       ),
                       _buildNavItem(
-                        icon: Ionicons.person_outline,
-                        selectedIcon: Ionicons.person,
-                        label: 'Profile',
+                        icon: Ionicons.menu_outline,
+                        selectedIcon: Ionicons.menu,
+                        label: 'Menu',
                         index: 3,
                       ),
                     ]
@@ -137,9 +103,9 @@ class _MainLayoutState extends State<MainLayout> {
                         index: 2,
                       ),
                       _buildNavItem(
-                        icon: Ionicons.person_outline,
-                        selectedIcon: Ionicons.person,
-                        label: 'Profile',
+                        icon: Ionicons.menu_outline,
+                        selectedIcon: Ionicons.menu,
+                        label: 'Menu',
                         index: 3,
                       ),
                     ],

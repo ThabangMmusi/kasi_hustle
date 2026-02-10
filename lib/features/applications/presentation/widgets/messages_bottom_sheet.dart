@@ -3,6 +3,7 @@ import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
 import 'package:kasi_hustle/features/applications/domain/models/application.dart';
+import 'package:kasi_hustle/features/applications/presentation/widgets/bottom_sheet_header.dart';
 
 class MessagesBottomSheet extends StatefulWidget {
   final Application application;
@@ -77,57 +78,10 @@ class _MessagesBottomSheetState extends State<MessagesBottomSheet> {
           ),
 
           // Header
-          Padding(
-            padding: EdgeInsets.all(Insets.lg),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        colorScheme.primary,
-                        colorScheme.primaryContainer,
-                      ],
-                    ),
-                  ),
-                  child: Icon(
-                    Ionicons.person,
-                    color: colorScheme.onPrimary,
-                    size: IconSizes.med,
-                  ),
-                ),
-                HSpace.med,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      UiText(
-                        text: widget.application.jobOwnerName,
-                        style: TextStyles.titleMedium.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      UiText(
-                        text: widget.application.jobTitle,
-                        style: TextStyles.bodySmall.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(Ionicons.close, color: colorScheme.onSurface),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
+          BottomSheetHeader(
+            title: widget.application.jobTitle,
+            subtitle: widget.application.location,
           ),
-
-          Divider(height: 1, color: colorScheme.outline.withValues(alpha: 0.2)),
 
           // Messages list
           Flexible(

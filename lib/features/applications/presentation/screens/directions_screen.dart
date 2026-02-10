@@ -115,7 +115,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
         }
       }
     } catch (e) {
-      print('Error getting directions: $e');
+      // Log or handle error appropriately in production
     }
   }
 
@@ -276,7 +276,7 @@ class _DirectionsScreenState extends State<DirectionsScreen> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

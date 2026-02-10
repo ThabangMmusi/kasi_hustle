@@ -62,12 +62,10 @@ class KasiTheme {
         primary: AppColors.kasiRed,
         secondary: AppColors.kasiRedDark,
         surface: AppColors.darkSurface,
-        background: AppColors.darkBackground,
         error: AppColors.error,
         onPrimary: Colors.black,
         onSecondary: Colors.black,
         onSurface: AppColors.darkTextPrimary,
-        onBackground: AppColors.darkTextPrimary,
         onError: Colors.white,
       ),
 
@@ -281,7 +279,6 @@ class KasiTheme {
         onPrimary: Colors.white,
         onSecondary: Colors.black,
         onSurface: AppColors.lightTextPrimary,
-        onBackground: AppColors.lightTextPrimary,
         onError: Colors.white,
       ),
 
@@ -485,7 +482,7 @@ extension ThemeExtension on BuildContext {
   Color get primaryColor => Theme.of(this).colorScheme.primary;
   Color get backgroundColor => Theme.of(this).colorScheme.surface;
   Color get surfaceColor => Theme.of(this).colorScheme.surface;
-  Color get textPrimary => Theme.of(this).colorScheme.onBackground;
+  Color get textPrimary => Theme.of(this).colorScheme.onSurface;
 
   // Theme mode check
   bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;

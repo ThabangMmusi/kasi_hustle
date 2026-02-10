@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
 import 'package:kasi_hustle/features/onboarding/presentation/bloc/onboarding_bloc.dart';

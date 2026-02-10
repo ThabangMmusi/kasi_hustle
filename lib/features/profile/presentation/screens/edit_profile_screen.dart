@@ -12,6 +12,8 @@ import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_event.dart';
 import 'package:kasi_hustle/core/widgets/skill_selection_widget.dart';
+import 'package:kasi_hustle/core/widgets/buttons/delete_btn.dart';
+import 'package:kasi_hustle/features/auth/bloc/app_bloc.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final UserProfile profile;
@@ -396,6 +398,62 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  Widget _buildSkillSelectionItem({
+    required BuildContext context,
+    required String title,
+    required List<String> selectedSkills,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final summary = selectedSkills.isEmpty
+        ? 'None selected'
+        : selectedSkills.join(', ');
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: Corners.medBorder,
+      child: Container(
+        padding: EdgeInsets.all(Insets.lg),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: Corners.medBorder,
+          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UiText(
+                    text: title,
+                    style: TextStyles.titleMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  VSpace.xs,
+                  Text(
+                    summary,
+                    style: TextStyles.bodySmall.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Ionicons.chevron_forward,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
+              size: IconSizes.sm,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _saveProfile() {
     if (_firstNameController.text.trim().isEmpty ||
         _lastNameController.text.trim().isEmpty) {
@@ -434,6 +492,89 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     Navigator.pop(context);
   }
 
+  void _showDeleteConfirmationBottomSheet() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final mediaQuery = MediaQuery.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: mediaQuery.size.height * 0.45,
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: EdgeInsets.only(top: Insets.med),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            VSpace.xl,
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: Insets.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UiText(
+                    text: 'Delete Account?',
+                    style: TextStyles.headlineSmall.copyWith(
+                      color: colorScheme.error,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  VSpace.med,
+                  UiText(
+                    text:
+                        'This action cannot be undone. All your profile data, job history, and applications will be permanently deleted.',
+                    style: TextStyles.bodyLarge.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                      height: 1.5,
+                    ),
+                  ),
+                  VSpace.xl,
+                  VSpace.lg,
+                  SizedBox(
+                    width: double.infinity,
+                    child: DeleteBtn(
+                      onPressed: () {
+                        Navigator.pop(context); // Close bottom sheet
+                        context.read<AppBloc>().add(
+                          const AppDeleteAccountRequested(),
+                        );
+                      },
+                      label: 'Delete Permanently',
+                    ),
+                  ),
+                  VSpace.med,
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextBtn(
+                      'Cancel',
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -451,20 +592,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: UiText(text: 'Edit Profile', style: TextStyles.titleLarge),
-        actions: [
-          TextButton(
-            onPressed: _saveProfile,
-            child: UiText(
-              text: 'Save',
-              style: TextStyles.labelLarge.copyWith(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        centerTitle: false,
+        title: UiText(
+          text: 'Edit Profile',
+          style: TextStyles.titleLarge.copyWith(fontWeight: FontWeight.bold),
+        ),
+        leading: IconButton(
+          icon: Icon(Ionicons.chevron_back, color: colorScheme.onSurface),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(Insets.lg),
@@ -555,170 +695,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
             // Primary Skills Section - Only show for hustlers
             if (widget.profile.userType == 'hustler') ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  UiText(
-                    text: 'Primary Skills',
-                    style: TextStyles.labelLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SecondaryBtn(
-                    label: 'Edit',
-                    onPressed: _showPrimarySkillsBottomSheet,
-                    icon: Ionicons.create_outline,
-                  ),
-                ],
+              _buildSkillSelectionItem(
+                context: context,
+                title: 'Primary Skills',
+                selectedSkills: _primarySkills,
+                onTap: _showPrimarySkillsBottomSheet,
               ),
-              VSpace.sm,
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(Insets.lg),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
-                  borderRadius: Corners.medBorder,
-                  border: Border.all(
-                    color: colorScheme.outline.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: _primarySkills.isEmpty
-                    ? Row(
-                        children: [
-                          Icon(
-                            Ionicons.alert_circle_outline,
-                            color: colorScheme.error,
-                            size: IconSizes.sm,
-                          ),
-                          HSpace.sm,
-                          Expanded(
-                            child: UiText(
-                              text:
-                                  'No primary skills selected. Tap "Edit" to add.',
-                              style: TextStyles.bodyMedium.copyWith(
-                                color: colorScheme.error,
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Wrap(
-                        spacing: Insets.sm,
-                        runSpacing: Insets.sm,
-                        children: _primarySkills.map((skill) {
-                          return Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: Insets.med,
-                              vertical: Insets.sm,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorScheme.primary.withValues(alpha: 0.2),
-                              borderRadius: Corners.fullBorder,
-                              border: Border.all(color: colorScheme.primary),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Ionicons.checkmark_circle,
-                                  color: colorScheme.primary,
-                                  size: IconSizes.xs,
-                                ),
-                                HSpace.xs,
-                                UiText(
-                                  text: skill,
-                                  style: TextStyles.labelMedium.copyWith(
-                                    color: colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
-              ),
-              VSpace.xl,
-              // Secondary Skills Section - Only show for hustlers
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  UiText(
-                    text: 'Additional Skills',
-                    style: TextStyles.labelLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  SecondaryBtn(
-                    label: 'Edit',
-                    onPressed: _showSecondarySkillsBottomSheet,
-                    icon: Ionicons.create_outline,
-                  ),
-                ],
-              ),
-              VSpace.sm,
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(Insets.lg),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainer,
-                  borderRadius: Corners.medBorder,
-                  border: Border.all(
-                    color: colorScheme.outline.withValues(alpha: 0.3),
-                  ),
-                ),
-                child: _secondarySkills.isEmpty
-                    ? Row(
-                        children: [
-                          Icon(
-                            Ionicons.information_circle_outline,
-                            color: colorScheme.onSurface.withValues(alpha: 0.6),
-                            size: IconSizes.sm,
-                          ),
-                          HSpace.sm,
-                          Expanded(
-                            child: UiText(
-                              text: 'No additional skills. Tap "Edit" to add.',
-                              style: TextStyles.bodyMedium.copyWith(
-                                color: colorScheme.onSurface.withValues(
-                                  alpha: 0.6,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Wrap(
-                        spacing: Insets.sm,
-                        runSpacing: Insets.sm,
-                        children: _secondarySkills.map((skill) {
-                          return Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: Insets.med,
-                              vertical: Insets.sm,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorScheme.secondary.withValues(
-                                alpha: 0.2,
-                              ),
-                              borderRadius: Corners.fullBorder,
-                              border: Border.all(color: colorScheme.secondary),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                UiText(
-                                  text: skill,
-                                  style: TextStyles.labelMedium.copyWith(
-                                    color: colorScheme.secondary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
+              VSpace.lg,
+              _buildSkillSelectionItem(
+                context: context,
+                title: 'Additional Skills',
+                selectedSkills: _secondarySkills,
+                onTap: _showSecondarySkillsBottomSheet,
               ),
               VSpace.xl,
             ],
@@ -756,6 +744,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 icon: Ionicons.checkmark_circle_outline,
               ),
             ),
+
+            VSpace.xl,
+
+            // Delete Account Button
+            Center(
+              child: TextBtn(
+                'Delete Account',
+                onPressed: _showDeleteConfirmationBottomSheet,
+                style: ButtonStyle(
+                  foregroundColor: WidgetStateProperty.all(colorScheme.error),
+                ),
+              ),
+            ),
+
+            VSpace.med,
 
             VSpace.xl,
           ],

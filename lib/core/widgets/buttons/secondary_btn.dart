@@ -36,10 +36,10 @@ class SecondaryBtn extends StatelessWidget {
 
     // Add rounded corners and balanced padding
     effectiveStyle = effectiveStyle.copyWith(
-      shape: MaterialStatePropertyAll(
+      shape: WidgetStatePropertyAll(
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(Corners.xl)),
       ),
-      padding: MaterialStatePropertyAll(
+      padding: WidgetStatePropertyAll(
         EdgeInsets.symmetric(horizontal: Insets.lg, vertical: Insets.med),
       ),
     );

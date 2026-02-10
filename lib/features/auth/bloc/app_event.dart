@@ -20,6 +20,10 @@ class AppLogoutRequested extends AppEvent {
   const AppLogoutRequested();
 }
 
+class AppDeleteAccountRequested extends AppEvent {
+  const AppDeleteAccountRequested();
+}
+
 class AppProfileCreated extends AppEvent {
   final UserProfile profile;
 

@@ -261,14 +261,14 @@ class _JobDetailsBottomSheetContentState
                                 ) {
                                   return Container(
                                     padding: EdgeInsets.symmetric(
-                                      horizontal: Insets.med,
+                                      horizontal: Insets.sm,
                                       vertical: Insets.xs,
                                     ),
                                     decoration: BoxDecoration(
                                       color: colorScheme.secondary.withValues(
                                         alpha: 0.2,
                                       ),
-                                      borderRadius: Corners.smBorder,
+                                      borderRadius: Corners.fullBorder,
                                       border: Border.all(
                                         color: colorScheme.secondary,
                                         width: 1,
@@ -276,7 +276,7 @@ class _JobDetailsBottomSheetContentState
                                     ),
                                     child: UiText(
                                       text: skill,
-                                      style: TextStyles.bodyMedium.copyWith(
+                                      style: TextStyles.labelMedium.copyWith(
                                         color: colorScheme.secondary,
                                         fontWeight: FontWeight.bold,
                                       ),

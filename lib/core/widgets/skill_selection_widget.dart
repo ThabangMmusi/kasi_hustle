@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
 
 class SkillSelectionWidget extends StatelessWidget {
@@ -58,36 +57,22 @@ class SkillChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? colorScheme.primary.withValues(alpha: 0.2)
+              ? colorScheme.primary
               : colorScheme.surfaceContainer,
           borderRadius: Corners.fullBorder,
           border: Border.all(
             color: isSelected
                 ? colorScheme.primary
                 : colorScheme.outline.withValues(alpha: 0.3),
-            width: isSelected ? 1.5 : 1,
+            width: 1,
           ),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isSelected)
-              Padding(
-                padding: EdgeInsets.only(right: Insets.xs),
-                child: Icon(
-                  Ionicons.checkmark_circle,
-                  color: colorScheme.primary,
-                  size: IconSizes.xs,
-                ),
-              ),
-            Text(
-              skill,
-              style: TextStyles.labelLarge.copyWith(
-                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              ),
-            ),
-          ],
+        child: Text(
+          skill,
+          style: TextStyles.labelLarge.copyWith(
+            color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
         ),
       ),
     );

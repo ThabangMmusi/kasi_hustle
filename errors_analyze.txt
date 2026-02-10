@@ -1,0 +1,74 @@
+Analyzing kasi_hustle...                                        
+
+   info - 'desiredAccuracy' is deprecated and shouldn't be used. use settings parameter with AndroidSettings, AppleSettings, WebSettings, or LocationSettings - lib\core\services\location_service.dart:48:9 - deprecated_member_use
+   info - Don't invoke 'print' in production code - lib\core\services\location_service.dart:53:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\location_service.dart:62:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\location_service.dart:71:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\location_service.dart:76:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\location_service.dart:92:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\location_service.dart:123:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\location_service.dart:129:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\location_service.dart:134:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\user_profile_service.dart:32:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\user_profile_service.dart:39:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\user_profile_service.dart:49:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\user_profile_service.dart:51:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\user_profile_service.dart:55:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\user_profile_service.dart:60:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\user_profile_service.dart:68:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\user_profile_service.dart:79:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\core\services\user_profile_service.dart:91:5 - avoid_print
+   info - 'background' is deprecated and shouldn't be used. Use surface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\core\theme\app_theme.dart:65:9 - deprecated_member_use
+   info - 'onBackground' is deprecated and shouldn't be used. Use onSurface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\core\theme\app_theme.dart:70:9 - deprecated_member_use
+   info - 'onBackground' is deprecated and shouldn't be used. Use onSurface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\core\theme\app_theme.dart:284:9 - deprecated_member_use
+   info - 'onBackground' is deprecated and shouldn't be used. Use onSurface instead. This feature was deprecated after v3.18.0-0.1.pre - lib\core\theme\app_theme.dart:488:55 - deprecated_member_use
+   info - 'fromBytes' is deprecated and shouldn't be used. Use BitmapDescriptor.bytes method instead - lib\core\utils\map_marker_helper.dart:47:29 - deprecated_member_use
+   info - 'MaterialStatePropertyAll' is deprecated and shouldn't be used. Use WidgetStatePropertyAll instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - lib\core\widgets\buttons\primary_btn.dart:49:16 - deprecated_member_use
+   info - 'MaterialStatePropertyAll' is deprecated and shouldn't be used. Use WidgetStatePropertyAll instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - lib\core\widgets\buttons\primary_btn.dart:52:24 - deprecated_member_use
+   info - 'MaterialStatePropertyAll' is deprecated and shouldn't be used. Use WidgetStatePropertyAll instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - lib\core\widgets\buttons\secondary_btn.dart:39:14 - deprecated_member_use
+   info - 'MaterialStatePropertyAll' is deprecated and shouldn't be used. Use WidgetStatePropertyAll instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - lib\core\widgets\buttons\secondary_btn.dart:42:16 - deprecated_member_use
+   info - 'desiredAccuracy' is deprecated and shouldn't be used. use settings parameter with AndroidSettings, AppleSettings, WebSettings, or LocationSettings - lib\core\widgets\location_picker_widget.dart:169:9 - deprecated_member_use
+   info - The member 'build' overrides an inherited member but isn't annotated with '@override' - lib\features\applications\presentation\screens\applications_screen.dart:44:10 - annotate_overrides
+   info - 'MaterialStateProperty' is deprecated and shouldn't be used. Use WidgetStateProperty instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - lib\features\applications\presentation\screens\applications_screen.dart:516:42 - deprecated_member_use
+   info - Don't invoke 'print' in production code - lib\features\applications\presentation\screens\directions_screen.dart:118:7 - avoid_print
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\applications\presentation\screens\directions_screen.dart:279:41 - deprecated_member_use
+   info - 'MaterialStateProperty' is deprecated and shouldn't be used. Use WidgetStateProperty instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - lib\features\applications\presentation\screens\my_applicion_screen.dart:511:42 - deprecated_member_use
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:29:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:40:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:44:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:47:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:57:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:66:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:112:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:129:11 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:138:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:141:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:142:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:143:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:151:9 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:156:7 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:166:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:172:5 - avoid_print
+   info - Don't invoke 'print' in production code - lib\features\auth\bloc\app_bloc.dart:179:5 - avoid_print
+   info - 'MaterialStatePropertyAll' is deprecated and shouldn't be used. Use WidgetStatePropertyAll instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - lib\features\auth\presentation\widgets\magic_link_dialog.dart:72:32 - deprecated_member_use
+   info - 'MaterialStatePropertyAll' is deprecated and shouldn't be used. Use WidgetStatePropertyAll instead. Moved to the Widgets layer to make code available outside of Material. This feature was deprecated after v3.19.0-0.3.pre - lib\features\auth\presentation\widgets\magic_link_dialog.dart:75:32 - deprecated_member_use
+   info - The member 'submitApplication' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\home_repository_impl.dart:64:16 - annotate_overrides
+   info - 'setMapStyle' is deprecated and shouldn't be used. Use GoogleMap.style instead - lib\features\home\presentation\widgets\home_map_view.dart:62:28 - deprecated_member_use
+   info - 'desiredAccuracy' is deprecated and shouldn't be used. use settings parameter with AndroidSettings, AppleSettings, WebSettings, or LocationSettings - lib\features\jobs\domain\services\location_service.dart:23:50 - deprecated_member_use
+   info - Don't invoke 'print' in production code - lib\features\onboarding\presentation\bloc\onboarding_bloc.dart:202:9 - avoid_print
+   info - Unnecessary use of multiple underscores - lib\features\onboarding\presentation\screens\onboarding_screen.dart:105:44 - unnecessary_underscores
+warning - Unused import: 'package:ionicons/ionicons.dart' - lib\features\onboarding\presentation\widgets\select_user_type_step.dart:3:8 - unused_import
+   info - Constructors for public widgets should have a named 'key' parameter - lib\features\onboarding\presentation\widgets\select_user_type_step.dart:94:9 - use_key_in_widget_constructors
+warning - Unused import: 'package:ionicons/ionicons.dart' - lib\features\onboarding\presentation\widgets\verification_step.dart:3:8 - unused_import
+   info - The import of 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart' is unnecessary because all of the used elements are also provided by the import of 'package:kasi_hustle/core/widgets/buttons/buttons.dart' - lib\features\profile\presentation\screens\edit_profile_screen.dart:7:8 - unnecessary_import
+   info - The import of 'package:kasi_hustle/core/widgets/buttons/text_btn.dart' is unnecessary because all of the used elements are also provided by the import of 'package:kasi_hustle/core/widgets/buttons/buttons.dart' - lib\features\profile\presentation\screens\edit_profile_screen.dart:8:8 - unnecessary_import
+warning - Unused import: 'package:go_router/go_router.dart' - lib\features\profile\presentation\screens\profile_screen.dart:4:8 - unused_import
+   info - Invalid use of a private type in a public API - lib\features\search\presentation\screens\search_screen.dart:46:3 - library_private_types_in_public_api
+   info - 'WillPopScope' is deprecated and shouldn't be used. Use PopScope instead. The Android predictive back feature will not work with WillPopScope. This feature was deprecated after v3.12.0-1.0.pre - lib\features\verification\presentation\screens\verification_screen.dart:49:12 - deprecated_member_use
+   info - Don't use 'BuildContext's across async gaps - lib\features\verification\presentation\screens\verification_screen.dart:79:17 - use_build_context_synchronously
+   info - Invalid use of a private type in a public API - lib\features\verification\presentation\widgets\camera_screen.dart:24:3 - library_private_types_in_public_api
+   info - The import of 'package:google_maps_flutter/google_maps_flutter.dart' is unnecessary because all of the used elements are also provided by the import of 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart' - lib\main.dart:4:8 - unnecessary_import
+   info - The imported package 'google_maps_flutter_android' isn't a dependency of the importing package - lib\main.dart:5:8 - depend_on_referenced_packages
+   info - The imported package 'google_maps_flutter_platform_interface' isn't a dependency of the importing package - lib\main.dart:6:8 - depend_on_referenced_packages
+
+70 issues found. (ran in 4.8s)

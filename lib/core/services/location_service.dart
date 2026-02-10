@@ -45,12 +45,13 @@ class LocationService {
 
       // Get current position
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       // Try geocoding package first (faster, local service)
       try {
-        print('🔄 Trying geocoding package...');
         List<Placemark> placemarks = await placemarkFromCoordinates(
           position.latitude,
           position.longitude,
@@ -59,7 +60,6 @@ class LocationService {
         if (placemarks.isNotEmpty) {
           final placemark = placemarks.first;
           final locationName = _formatLocationFromPlacemark(placemark);
-          print('✅ Address from geocoding: $locationName');
 
           return LocationData(
             locationName: locationName,
@@ -68,12 +68,11 @@ class LocationService {
           );
         }
       } catch (geocodingError) {
-        print('⚠️ Geocoding package failed: $geocodingError');
+        // Silently fail to fallback
       }
 
       // Fallback to Google Places API (slower but more accurate)
       try {
-        print('🌍 Falling back to Google Places API...');
         final locationName =
             await _getAddressFromCoordinates(
               position.latitude,
@@ -89,8 +88,6 @@ class LocationService {
           longitude: position.longitude,
         );
       } catch (e) {
-        print('⚠️ Google Places API error: $e');
-
         // If all else fails, return coordinates as string
         return LocationData(
           locationName:
@@ -120,18 +117,14 @@ class LocationService {
     );
 
     try {
-      print('🌍 Fetching address for: $latitude, $longitude');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        print('📍 Google Places API status: ${data['status']}');
-
         if (data['status'] == 'OK' && data['results'].isNotEmpty) {
           // Get the formatted address from the first result
           final formattedAddress = data['results'][0]['formatted_address'];
-          print('✅ Address found: $formattedAddress');
           return _simplifyAddress(formattedAddress);
         } else if (data['status'] == 'REQUEST_DENIED') {
           throw Exception('Google Places API key is invalid or not enabled');

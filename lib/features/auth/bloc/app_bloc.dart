@@ -17,6 +17,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       super(const AppState.unknown()) {
     on<AppUserChanged>(_onAppUserChanged);
     on<AppLogoutRequested>(_onAppLogoutRequested);
+    on<AppDeleteAccountRequested>(_onAppDeleteAccountRequested);
     on<AppProfileCreated>(_onAppProfileCreated);
 
     // Listen to Supabase auth state changes
@@ -26,7 +27,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     ) {
       final session = data.session;
       final user = session?.user;
-      print('🔐 Auth state change: event=${data.event}, user=${user?.email}');
       add(AppUserChanged(user));
     });
   }
@@ -37,14 +37,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   ) async {
     final supabaseUser = event.user;
 
-    print('👤 APP USER CHANGED: user=${supabaseUser?.email}');
-
     if (supabaseUser != null) {
       // FIRST: Emit loading state to signal router we're working on it
-      print('⏳ Emitting loading state...');
       // emit(AppState.loading());
-
-      print('🔍 Fetching profile for user: ${supabaseUser.id}');
 
       try {
         // SECOND: Try to load user profile from database
@@ -54,19 +49,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             .eq('id', supabaseUser.id)
             .maybeSingle();
 
-        print(
-          '📊 Profile query result: ${response != null ? "Found" : "Not found"}',
-        );
-
         UserProfile? userProfile;
         bool isCompleteProfile = false; // Default to false
 
         if (response == null) {
           // NEW USER - No profile found in database
-          print(
-            '🆕 New user detected - creating temporary profile from auth metadata',
-          );
-
           final displayName =
               supabaseUser.userMetadata?['full_name'] ?? supabaseUser.email;
 
@@ -109,8 +96,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           isCompleteProfile = false; // New user needs onboarding
         } else {
           // EXISTING USER - Profile found in database
-          print('✅ Existing user detected - loading profile from database');
-
           userProfile = UserProfile.fromJson(response);
 
           // THIRD: Validate if profile is complete
@@ -125,22 +110,12 @@ class AppBloc extends Bloc<AppEvent, AppState> {
               userProfile.primarySkills.isNotEmpty;
 
           isCompleteProfile = hasName && hasUserType && hasRequiredSkills;
-
-          print(
-            '📋 Profile validation: name=$hasName, userType=$hasUserType, skills=$hasRequiredSkills → complete=$isCompleteProfile',
-          );
         }
 
         // Update UserProfileService with loaded profile
         _userProfileService.setUser(userProfile);
 
         // FINALLY: Emit authenticated state with complete information
-        print(
-          '✨ Emitting authenticated state: profileCompleted=$isCompleteProfile',
-        );
-        print('   📌 User: ${userProfile.firstName} ${userProfile.lastName}');
-        print('   📌 UserType: ${userProfile.userType}');
-        print('   📌 Primary Skills: ${userProfile.primarySkills}');
         emit(
           AppState.authenticated(
             user: userProfile,
@@ -148,12 +123,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           ),
         );
       } catch (e) {
-        print('❌ Error loading user profile: $e');
         emit(const AppState.unauthenticated());
       }
     } else {
       // No user logged in
-      print('🚫 No user - setting unauthenticated');
       _userProfileService.setUser(null);
       emit(const AppState.unauthenticated());
     }
@@ -163,28 +136,45 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     AppLogoutRequested event,
     Emitter<AppState> emit,
   ) async {
-    print('🚪 Logout requested');
     // Emit unauthenticated state immediately
     emit(const AppState.unauthenticated());
     // Clear user profile and sign out from Supabase
     _userProfileService.setUser(null);
     await _userProfileService.clearUser();
-    print('✅ Logged out successfully');
   }
 
   Future<void> _onAppProfileCreated(
     AppProfileCreated event,
     Emitter<AppState> emit,
   ) async {
-    print(
-      '✨ Profile created: ${event.profile.firstName} ${event.profile.lastName}',
-    );
-
     // Update UserProfileService with the created profile
     _userProfileService.setUser(event.profile);
 
     // Emit authenticated state with complete profile
     emit(AppState.authenticated(user: event.profile, profileCompleted: true));
+  }
+
+  Future<void> _onAppDeleteAccountRequested(
+    AppDeleteAccountRequested event,
+    Emitter<AppState> emit,
+  ) async {
+    final user = state.user;
+    if (user == null) return;
+
+    try {
+      // Delete profile from Supabase
+      await Supabase.instance.client
+          .from('profiles')
+          .delete()
+          .eq('id', user.id);
+
+      // Trigger logout to clear state and sign out
+      add(const AppLogoutRequested());
+    } catch (e) {
+      print('❌ Failed to delete account: $e');
+      // We might want to emit an error state here, but for now just logout
+      add(const AppLogoutRequested());
+    }
   }
 
   @override

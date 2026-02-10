@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kasi_hustle/core/theme/app_theme.dart';
+
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
@@ -41,6 +41,7 @@ class ApplicationsScreen extends StatelessWidget {
 class ApplicationsScreenContent extends StatelessWidget {
   const ApplicationsScreenContent({super.key});
 
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -57,249 +58,142 @@ class ApplicationsScreenContent extends StatelessWidget {
     );
 
     return Scaffold(
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        title: UiText(
+          text: 'My Applications',
+          style: TextStyles.headlineSmall.copyWith(
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        centerTitle: false,
+      ),
       body: BlocBuilder<ReceivedApplicationsBloc, ReceivedApplicationsState>(
         builder: (context, state) {
-          return Container(
-            color: AppColors.darkSurface,
-            child: Column(
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(Insets.lg),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      VSpace.xxl,
-                      UiText(
-                        text: 'My Applications',
-                        style: TextStyles.headlineMedium.copyWith(
-                          color: colorScheme.surface,
-                          fontWeight: FontWeight.bold,
+          if (state is ReceivedApplicationsLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is ReceivedApplicationsError) {
+            return Center(child: Text(state.message));
+          }
+
+          if (state is ReceivedApplicationsLoaded) {
+            final tabs = <Tab>[];
+            final tabViews = <Widget>[];
+
+            if (state.pendingApplications.isNotEmpty) {
+              tabs.add(
+                Tab(text: 'Pending (${state.pendingApplications.length})'),
+              );
+              tabViews.add(
+                ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: state.pendingApplications
+                      .map(
+                        (app) => ApplicationCard(
+                          application: app,
+                          onWithdraw: () {
+                            _showWithdrawDialog(context, app.id);
+                          },
                         ),
-                      ),
-                      VSpace.lg,
-                      if (state is ReceivedApplicationsLoaded)
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildStatCard(
-                                icon: Icons.pending_outlined,
-                                value: '${state.pendingApplications.length}',
-                                label: 'Pending',
-                                color: Colors.orange,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildStatCard(
-                                icon: Icons.check_circle_outline,
-                                value: '${state.acceptedApplications.length}',
-                                label: 'Accepted',
-                                color: Colors.green,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildStatCard(
-                                icon: Icons.cancel_outlined,
-                                value: '${state.rejectedApplications.length}',
-                                label: 'Rejected',
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
+                      )
+                      .toList(),
                 ),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16.0),
-                        topRight: Radius.circular(16.0),
-                      ),
-                    ),
-                    child: Builder(
-                      builder: (context) {
-                        if (state is ReceivedApplicationsLoading) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
+              );
+            }
 
-                        if (state is ReceivedApplicationsError) {
-                          return Center(child: Text(state.message));
-                        }
-
-                        if (state is ReceivedApplicationsLoaded) {
-                          return _buildMyApplicationsList(context, state);
-                        }
-
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
+            if (state.acceptedApplications.isNotEmpty) {
+              tabs.add(
+                Tab(text: 'Accepted (${state.acceptedApplications.length})'),
+              );
+              tabViews.add(
+                ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: state.acceptedApplications
+                      .map((app) => ApplicationCard(application: app))
+                      .toList(),
                 ),
-              ],
-            ),
-          );
+              );
+            }
+
+            if (state.rejectedApplications.isNotEmpty) {
+              tabs.add(
+                Tab(text: 'Rejected (${state.rejectedApplications.length})'),
+              );
+              tabViews.add(
+                ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: state.rejectedApplications
+                      .map((app) => ApplicationCard(application: app))
+                      .toList(),
+                ),
+              );
+            }
+
+            if (tabs.isEmpty) {
+              return _buildEmptyState(context);
+            }
+
+            return DefaultTabController(
+              length: tabs.length,
+              child: Column(
+                children: [
+                  TabBar(
+                    tabs: tabs,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
+                    labelColor: colorScheme.primary,
+                    unselectedLabelColor: colorScheme.onSurface.withValues(
+                      alpha: 0.6,
+                    ),
+                    indicatorColor: colorScheme.primary,
+                    dividerColor: Colors.transparent,
+                  ),
+                  Expanded(child: TabBarView(children: tabViews)),
+                ],
+              ),
+            );
+          }
+
+          return const SizedBox.shrink();
         },
       ),
     );
   }
 
-  Widget _buildMyApplicationsList(
-    BuildContext context,
-    ReceivedApplicationsLoaded state,
-  ) {
-    if (state.applications.isEmpty) {
-      final colorScheme = Theme.of(context).colorScheme;
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.work_off_outlined,
-              size: 80,
-              color: colorScheme.onSurface.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'No applications yet',
-              style: TextStyle(
-                color: colorScheme.onSurface.withValues(alpha: 0.6),
-                fontSize: 18,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Start applying to jobs to see them here',
-              style: TextStyle(
-                color: colorScheme.onSurface.withValues(alpha: 0.4),
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        if (state.pendingApplications.isNotEmpty) ...[
-          _buildSectionHeader(
-            context,
-            'Pending',
-            state.pendingApplications.length,
-          ),
-          const SizedBox(height: 12),
-          ...state.pendingApplications.map(
-            (app) => ApplicationCard(
-              application: app,
-              onWithdraw: () {
-                _showWithdrawDialog(context, app.id);
-              },
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-        if (state.acceptedApplications.isNotEmpty) ...[
-          _buildSectionHeader(
-            context,
-            'Accepted',
-            state.acceptedApplications.length,
-          ),
-          const SizedBox(height: 12),
-          ...state.acceptedApplications.map(
-            (app) => ApplicationCard(application: app),
-          ),
-          const SizedBox(height: 24),
-        ],
-        if (state.rejectedApplications.isNotEmpty) ...[
-          _buildSectionHeader(
-            context,
-            'Rejected',
-            state.rejectedApplications.length,
-          ),
-          const SizedBox(height: 12),
-          ...state.rejectedApplications.map(
-            (app) => ApplicationCard(application: app),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String value,
-    required String label,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
+  Widget _buildEmptyState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 28),
+          Icon(
+            Icons.work_off_outlined,
+            size: 80,
+            color: colorScheme.onSurface.withValues(alpha: 0.3),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No applications yet',
+            style: TextStyle(
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              fontSize: 18,
+            ),
+          ),
           const SizedBox(height: 8),
           Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
+            'Start applying to jobs to see them here',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 12,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
+              fontSize: 14,
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSectionHeader(BuildContext context, String title, int count) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Row(
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: colorScheme.onSurface,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            '$count',
-            style: const TextStyle(
-              color: Color(0xFFFFD700),
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -451,23 +345,9 @@ class ApplicationCard extends StatelessWidget {
                         ),
                         HSpace.xs,
                         UiText(
-                          text: 'Posted by ${application.jobOwnerName}',
+                          text: 'Applicant: ${application.applicantName}',
                           style: TextStyles.bodySmall.copyWith(
                             color: colorScheme.onSurface.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        HSpace.lg,
-                        Icon(
-                          Ionicons.cash_outline,
-                          color: colorScheme.primary,
-                          size: IconSizes.xs,
-                        ),
-                        HSpace.xs,
-                        UiText(
-                          text: 'R${application.budget.toStringAsFixed(0)}',
-                          style: TextStyles.bodySmall.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
@@ -500,6 +380,24 @@ class ApplicationCard extends StatelessWidget {
                             color: colorScheme.onSurface.withValues(alpha: 0.5),
                           ),
                         ),
+                        Spacer(),
+                        Row(
+                          children: [
+                            Icon(
+                              Ionicons.cash_outline,
+                              color: colorScheme.primary,
+                              size: IconSizes.xs,
+                            ),
+                            HSpace.xs,
+                            UiText(
+                              text: 'R${application.budget.toStringAsFixed(0)}',
+                              style: TextStyles.bodySmall.copyWith(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ],
@@ -519,7 +417,7 @@ class ApplicationCard extends StatelessWidget {
                       onPressed: onWithdraw,
                       label: 'Reject Application',
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(
+                        backgroundColor: WidgetStateProperty.all(
                           colorScheme.error,
                         ),
                       ),

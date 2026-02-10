@@ -20,8 +20,46 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
           .eq('user_id', userId)
           .order('applied_at', ascending: false);
 
-      return (applicationsData as List).map((app) {
-        final job = app['jobs'] as Map<String, dynamic>;
+      final List<Map<String, dynamic>> apps = List<Map<String, dynamic>>.from(
+        applicationsData as List,
+      );
+
+      if (apps.isEmpty) return [];
+
+      // 2. Extract unique job owner IDs
+      final ownerIds = apps
+          .map((app) {
+            final job = app['jobs'] as Map<String, dynamic>?;
+            return job?['created_by'] as String?;
+          })
+          .whereType<String>()
+          .toSet()
+          .toList();
+
+      // 3. Fetch profiles for these owners
+      Map<String, Map<String, dynamic>> profileMap = {};
+      if (ownerIds.isNotEmpty) {
+        final profilesData = await _supabaseClient
+            .from('profiles')
+            .select('id, first_name, last_name')
+            .filter('id', 'in', ownerIds);
+
+        for (var profile in (profilesData as List)) {
+          profileMap[profile['id']] = profile as Map<String, dynamic>;
+        }
+      }
+
+      // 4. Map everything to Application objects
+      return apps.map((app) {
+        final job = app['jobs'] as Map<String, dynamic>? ?? {};
+        final ownerId = job['created_by'] as String? ?? '';
+        final profile = profileMap[ownerId];
+
+        final ownerName = profile != null
+            ? '${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}'
+                  .trim()
+            : 'Unknown';
+
         return Application(
           id: app['id'] as String,
           jobId: app['job_id'] as String,
@@ -38,8 +76,8 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
           appliedAt: DateTime.parse(
             app['applied_at'] as String? ?? DateTime.now().toIso8601String(),
           ),
-          jobOwnerId: job['created_by'] as String? ?? '',
-          jobOwnerName: '',
+          jobOwnerId: ownerId,
+          jobOwnerName: ownerName.isEmpty ? 'Kasi Hustle User' : ownerName,
         );
       }).toList();
     } catch (e) {
@@ -54,16 +92,22 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
       final applicationsData = await _supabaseClient
           .from('applications')
           .select(
-            'id, job_id, status, applied_at, user_id, jobs!inner(id, title, description, budget, location, latitude, longitude, created_by), profiles!user_id(full_name)',
+            'id, job_id, status, applied_at, user_id, jobs!inner(id, title, description, budget, location, latitude, longitude, created_by), profiles!user_id(first_name, last_name)',
           )
           .eq('jobs.created_by', userId)
           .order('applied_at', ascending: false);
 
       return (applicationsData as List).map((app) {
         final job = app['jobs'] as Map<String, dynamic>;
-        final profiles = (app['profiles'] as List).isNotEmpty
-            ? app['profiles'][0] as Map<String, dynamic>
-            : {};
+        final profileList = app['profiles'] as List?;
+        final profile = (profileList != null && profileList.isNotEmpty)
+            ? profileList[0] as Map<String, dynamic>
+            : null;
+
+        final applicantName = profile != null
+            ? '${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}'
+                  .trim()
+            : 'Unknown';
 
         return Application(
           id: app['id'] as String,
@@ -75,8 +119,9 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
           latitude: (job['latitude'] as num?)?.toDouble() ?? 0.0,
           longitude: (job['longitude'] as num?)?.toDouble() ?? 0.0,
           applicantId: app['user_id'] as String? ?? '',
-          applicantName:
-              profiles['full_name'] as String? ?? 'Unknown Applicant',
+          applicantName: applicantName.isEmpty
+              ? 'Unknown Applicant'
+              : applicantName,
           message: '',
           status: app['status'] as String? ?? 'pending',
           appliedAt: DateTime.parse(
