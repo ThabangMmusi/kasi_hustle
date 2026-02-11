@@ -1,15 +1,20 @@
+import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/models/application.dart';
 import '../../domain/repositories/application_repository.dart';
 
 class ApplicationRepositoryImpl implements ApplicationRepository {
   final SupabaseClient _supabaseClient;
+  static const String _myAppsCacheKey = 'cached_my_applications';
+  static const String _receivedAppsCacheKey = 'cached_received_applications';
 
   ApplicationRepositoryImpl(this._supabaseClient);
 
   @override
   Future<List<Application>> getMyApplications(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
     try {
       // Fetch applications submitted by user with job details
       final applicationsData = await _supabaseClient
@@ -50,7 +55,7 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
       }
 
       // 4. Map everything to Application objects
-      return apps.map((app) {
+      final applications = apps.map((app) {
         final job = app['jobs'] as Map<String, dynamic>? ?? {};
         final ownerId = job['created_by'] as String? ?? '';
         final profile = profileMap[ownerId];
@@ -80,13 +85,26 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
           jobOwnerName: ownerName.isEmpty ? 'Kasi Hustle User' : ownerName,
         );
       }).toList();
+
+      // Cache the results
+      final appsJson = applications.map((app) => app.toJson()).toList();
+      await prefs.setString(_myAppsCacheKey, jsonEncode(appsJson));
+
+      return applications;
     } catch (e) {
+      // Fallback to cache
+      final cachedString = prefs.getString(_myAppsCacheKey);
+      if (cachedString != null) {
+        final List<dynamic> jsonList = jsonDecode(cachedString);
+        return jsonList.map((json) => Application.fromJson(json)).toList();
+      }
       throw Exception('Failed to fetch applications: $e');
     }
   }
 
   @override
   Future<List<Application>> getReceivedApplications(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
     try {
       // Fetch applications for jobs posted by user
       final applicationsData = await _supabaseClient
@@ -97,7 +115,7 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
           .eq('jobs.created_by', userId)
           .order('applied_at', ascending: false);
 
-      return (applicationsData as List).map((app) {
+      final applications = (applicationsData as List).map((app) {
         final job = app['jobs'] as Map<String, dynamic>;
         final profileList = app['profiles'] as List?;
         final profile = (profileList != null && profileList.isNotEmpty)
@@ -131,7 +149,19 @@ class ApplicationRepositoryImpl implements ApplicationRepository {
           jobOwnerName: '',
         );
       }).toList();
+
+      // Cache the results
+      final appsJson = applications.map((app) => app.toJson()).toList();
+      await prefs.setString(_receivedAppsCacheKey, jsonEncode(appsJson));
+
+      return applications;
     } catch (e) {
+      // Fallback to cache
+      final cachedString = prefs.getString(_receivedAppsCacheKey);
+      if (cachedString != null) {
+        final List<dynamic> jsonList = jsonDecode(cachedString);
+        return jsonList.map((json) => Application.fromJson(json)).toList();
+      }
       throw Exception('Failed to fetch received applications: $e');
     }
   }

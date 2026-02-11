@@ -46,16 +46,16 @@ class ApplicationsScreenContent extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: theme.colorScheme.surface,
-        systemNavigationBarIconBrightness: theme.brightness == Brightness.dark
-            ? Brightness.light
-            : Brightness.dark,
-      ),
-    );
+    // SystemChrome.setSystemUIOverlayStyle(
+    //   SystemUiOverlayStyle(
+    //     statusBarColor: Colors.transparent,
+    //     statusBarIconBrightness: Brightness.light,
+    //     systemNavigationBarColor: theme.colorScheme.surface,
+    //     systemNavigationBarIconBrightness: theme.brightness == Brightness.dark
+    //         ? Brightness.light
+    //         : Brightness.dark,
+    //   ),
+    // );
 
     return Scaffold(
       backgroundColor: colorScheme.surface,

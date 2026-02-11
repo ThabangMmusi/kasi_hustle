@@ -13,6 +13,8 @@ class UserProfile {
   final String userType; // 'hustler' or 'job_provider'
   final DateTime createdAt;
   final int completedJobs;
+  final String? email;
+  final String? phoneNumber;
   final String? locationName;
   final double? latitude;
   final double? longitude;
@@ -21,7 +23,8 @@ class UserProfile {
     required this.id,
     required this.firstName,
     required this.lastName,
-
+    this.email,
+    this.phoneNumber,
     this.primarySkills = const [],
     this.secondarySkills = const [],
     this.bio,
@@ -42,7 +45,9 @@ class UserProfile {
       id: json['id'],
       firstName: json['first_name'] ?? '',
       lastName: json['last_name'] ?? '',
-
+      email:
+          json['email'], // Email might not be in DB profile, but useful if we merge it
+      phoneNumber: json['phone_number'],
       primarySkills: List<String>.from(json['primary_skills'] ?? []),
       secondarySkills: List<String>.from(json['secondary_skills'] ?? []),
       bio: json['bio'],
@@ -66,7 +71,8 @@ class UserProfile {
       'id': id,
       'first_name': firstName,
       'last_name': lastName,
-
+      // 'email': email, // Don't save email to profiles table if it's auth-only, but keeping it in model
+      'phone_number': phoneNumber,
       'primary_skills': primarySkills,
       'secondary_skills': secondarySkills,
       'bio': bio,
@@ -86,7 +92,8 @@ class UserProfile {
   UserProfile copyWith({
     String? firstName,
     String? lastName,
-
+    String? email,
+    String? phoneNumber,
     List<String>? primarySkills,
     List<String>? secondarySkills,
     String? bio,
@@ -99,7 +106,8 @@ class UserProfile {
       id: id,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
-
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
       primarySkills: primarySkills ?? this.primarySkills,
       secondarySkills: secondarySkills ?? this.secondarySkills,
       bio: bio ?? this.bio,

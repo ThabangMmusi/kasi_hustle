@@ -3,14 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/services/user_profile_service.dart';
+import 'package:kasi_hustle/core/utils/ui_utils.dart';
 
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart';
-import 'package:kasi_hustle/core/widgets/buttons/secondary_btn.dart';
 import 'package:kasi_hustle/core/widgets/buttons/text_btn.dart';
 import 'package:kasi_hustle/core/widgets/styled_load_spinner.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
-import 'package:kasi_hustle/features/auth/bloc/app_bloc.dart';
+import 'package:kasi_hustle/core/widgets/skill_selection_widget.dart';
 import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_event.dart';
@@ -31,24 +31,365 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class ProfileScreenContent extends StatelessWidget {
+class ProfileScreenContent extends StatefulWidget {
   const ProfileScreenContent({super.key});
+
+  @override
+  State<ProfileScreenContent> createState() => _ProfileScreenContentState();
+}
+
+class _ProfileScreenContentState extends State<ProfileScreenContent> {
+  final List<String> _availableSkills = [
+    'Plumbing',
+    'Electrical',
+    'Carpentry',
+    'Painting',
+    'Cleaning',
+    'Gardening',
+    'Tiling',
+    'Roofing',
+    'Welding',
+    'Moving',
+    'Handyman',
+    'Security',
+    'Catering',
+    'Photography',
+    'Hair & Beauty',
+    'Tutoring',
+  ];
+
+  void _showPrimarySkillsBottomSheet(
+    BuildContext context,
+    UserProfile profile,
+  ) {
+    final tempPrimarySkills = List<String>.from(profile.primarySkills);
+
+    UiUtils.showGlobalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final theme = Theme.of(context);
+          final colorScheme = theme.colorScheme;
+
+          // Filter out skills already in secondary
+          final availableSkills = _availableSkills
+              .where((skill) => !profile.secondarySkills.contains(skill))
+              .toList();
+
+          void toggleSkill(String skill) {
+            setModalState(() {
+              if (tempPrimarySkills.contains(skill)) {
+                tempPrimarySkills.remove(skill);
+              } else {
+                if (tempPrimarySkills.length < 5) {
+                  tempPrimarySkills.add(skill);
+                }
+              }
+            });
+          }
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.5,
+            maxChildSize: 0.9,
+            builder: (context, scrollController) {
+              final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: Insets.lg).copyWith(
+                  bottom: bottomPadding + Insets.med,
+                ), // Add dynamic bottom padding
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: const BorderRadius.all(Radius.circular(24)),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    // Handle bar
+                    Container(
+                      margin: EdgeInsets.only(top: Insets.med),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: colorScheme.outline.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: EdgeInsets.all(Insets.lg),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          UiText(
+                            text: 'Primary Skills (Top 5)',
+                            style: TextStyles.titleLarge,
+                          ),
+                          TextBtn(
+                            'Clear',
+                            onPressed: () {
+                              setModalState(() {
+                                tempPrimarySkills.clear();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Divider(
+                      height: 1,
+                      color: colorScheme.outline.withValues(alpha: 0.2),
+                    ),
+
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        padding: EdgeInsets.symmetric(horizontal: Insets.lg),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            VSpace.lg,
+                            UiText(
+                              text: 'Select up to 5 skills you are best at.',
+                              style: TextStyles.bodyMedium.copyWith(
+                                color: colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ),
+                            ),
+                            VSpace.med,
+                            SkillSelectionWidget(
+                              availableSkills: availableSkills,
+                              selectedSkills: tempPrimarySkills,
+                              onSkillSelected: toggleSkill,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Bottom actions
+                    Container(
+                      padding: EdgeInsets.all(Insets.lg),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, -2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextBtn(
+                              'Cancel',
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ),
+                          HSpace.med,
+                          Expanded(
+                            flex: 2,
+                            child: PrimaryBtn(
+                              onPressed: tempPrimarySkills.isEmpty
+                                  ? null
+                                  : () {
+                                      final updatedProfile = profile.copyWith(
+                                        primarySkills: tempPrimarySkills,
+                                      );
+                                      // Instant update
+                                      context.read<ProfileBloc>().add(
+                                        UpdateProfile(profile: updatedProfile),
+                                      );
+                                      Navigator.pop(context);
+                                    },
+                              label: 'Apply',
+                              icon: Ionicons.checkmark,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  void _showSecondarySkillsBottomSheet(
+    BuildContext context,
+    UserProfile profile,
+  ) {
+    final tempSecondarySkills = List<String>.from(profile.secondarySkills);
+
+    UiUtils.showGlobalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final theme = Theme.of(context);
+          final colorScheme = theme.colorScheme;
+
+          // Filter out skills already in primary
+          final availableSkills = _availableSkills
+              .where((skill) => !profile.primarySkills.contains(skill))
+              .toList();
+
+          void toggleSkill(String skill) {
+            setModalState(() {
+              if (tempSecondarySkills.contains(skill)) {
+                tempSecondarySkills.remove(skill);
+              } else {
+                tempSecondarySkills.add(skill);
+              }
+            });
+          }
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.5,
+            maxChildSize: 0.9,
+            builder: (context, scrollController) {
+              final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+              return Container(
+                margin: EdgeInsets.symmetric(
+                  horizontal: Insets.lg,
+                ).copyWith(bottom: bottomPadding + Insets.med),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  borderRadius: const BorderRadius.all(Radius.circular(24)),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(top: Insets.med),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: colorScheme.outline.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: EdgeInsets.all(Insets.lg),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          UiText(
+                            text: 'Additional Skills',
+                            style: TextStyles.titleLarge,
+                          ),
+                          TextBtn(
+                            'Clear',
+                            onPressed: () {
+                              setModalState(() {
+                                tempSecondarySkills.clear();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Divider(
+                      height: 1,
+                      color: colorScheme.outline.withValues(alpha: 0.2),
+                    ),
+
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        padding: EdgeInsets.symmetric(horizontal: Insets.lg),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            VSpace.lg,
+                            UiText(
+                              text: 'Select other skills you offer.',
+                              style: TextStyles.bodyMedium.copyWith(
+                                color: colorScheme.onSurface.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ),
+                            ),
+                            VSpace.med,
+                            SkillSelectionWidget(
+                              availableSkills: availableSkills,
+                              selectedSkills: tempSecondarySkills,
+                              onSkillSelected: toggleSkill,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Bottom actions
+                    Container(
+                      padding: EdgeInsets.all(Insets.lg),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, -2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextBtn(
+                              'Cancel',
+                              onPressed: () => Navigator.pop(context),
+                            ),
+                          ),
+                          HSpace.med,
+                          Expanded(
+                            flex: 2,
+                            child: PrimaryBtn(
+                              onPressed: () {
+                                final updatedProfile = profile.copyWith(
+                                  secondarySkills: tempSecondarySkills,
+                                );
+                                context.read<ProfileBloc>().add(
+                                  UpdateProfile(profile: updatedProfile),
+                                );
+                                Navigator.pop(context);
+                              },
+                              label: 'Apply',
+                              icon: Ionicons.checkmark,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: theme.colorScheme.surface,
-        systemNavigationBarIconBrightness: theme.brightness == Brightness.dark
-            ? Brightness.light
-            : Brightness.dark,
-      ),
-    );
 
     return Scaffold(
       body: BlocBuilder<ProfileBloc, ProfileState>(
@@ -343,44 +684,6 @@ class ProfileScreenContent extends StatelessWidget {
                     SliverToBoxAdapter(
                       child: Column(
                         children: [
-                          VSpace.med,
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: Insets.lg,
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: _buildStatCard(
-                                    context: context,
-                                    icon: Ionicons.star,
-                                    value: profile.rating.toStringAsFixed(1),
-                                    label: 'Rating',
-                                  ),
-                                ),
-                                HSpace.med,
-                                Expanded(
-                                  child: _buildStatCard(
-                                    context: context,
-                                    icon: Ionicons.chatbox_ellipses_outline,
-                                    value: '${profile.totalReviews}',
-                                    label: 'Reviews',
-                                  ),
-                                ),
-                                HSpace.med,
-                                Expanded(
-                                  child: _buildStatCard(
-                                    context: context,
-                                    icon: Ionicons.briefcase,
-                                    value: '${profile.completedJobs}',
-                                    label: 'Jobs Done',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          VSpace.xl,
-
                           Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: Insets.lg,
@@ -418,7 +721,7 @@ class ProfileScreenContent extends StatelessWidget {
                                         VSpace.xs,
                                       ],
                                       UiText(
-                                        text: profile.bio ?? 'About me',
+                                        text: profile.bio ?? 'Tap to add bio',
                                         style: TextStyles.bodyLarge.copyWith(
                                           color: colorScheme.onSurface
                                               .withValues(
@@ -437,69 +740,45 @@ class ProfileScreenContent extends StatelessWidget {
                           ),
                           if (profile.userType == 'hustler') ...[
                             VSpace.xl,
-                            _buildStandardSection(
+                            _buildInteractableSection(
                               context: context,
                               icon: Icons.star,
                               title: 'Primary Skills',
-                              content: Wrap(
-                                spacing: Insets.sm,
-                                runSpacing: Insets.sm,
-                                children: profile.primarySkills.map((skill) {
-                                  return Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: Insets.sm,
-                                      vertical: Insets.xs,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.primary.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      borderRadius: Corners.fullBorder,
-                                      border: Border.all(
-                                        color: colorScheme.primary,
-                                      ),
-                                    ),
-                                    child: UiText(
-                                      text: skill,
-                                      style: TextStyles.labelMedium.copyWith(
-                                        color: colorScheme.primary,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
+                              onTap: () => _showPrimarySkillsBottomSheet(
+                                context,
+                                profile,
+                              ),
+                              content: UiText(
+                                text: profile.primarySkills.isEmpty
+                                    ? 'Add primary skills'
+                                    : profile.primarySkills.join(', '),
+                                style: TextStyles.bodyMedium.copyWith(
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                  height: 1.5,
+                                ),
                               ),
                             ),
                             VSpace.xl,
-                            _buildStandardSection(
+                            _buildInteractableSection(
                               context: context,
                               icon: Ionicons.add_circle_outline,
                               title: 'Additional Skills',
-                              content: Wrap(
-                                spacing: Insets.sm,
-                                runSpacing: Insets.sm,
-                                children: profile.secondarySkills.map((skill) {
-                                  return Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: Insets.sm,
-                                      vertical: Insets.xs,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.secondary.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      borderRadius: Corners.fullBorder,
-                                      border: Border.all(
-                                        color: colorScheme.secondary,
-                                      ),
-                                    ),
-                                    child: UiText(
-                                      text: skill,
-                                      style: TextStyles.labelMedium.copyWith(
-                                        color: colorScheme.secondary,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
+                              onTap: () => _showSecondarySkillsBottomSheet(
+                                context,
+                                profile,
+                              ),
+                              content: UiText(
+                                text: profile.secondarySkills.isEmpty
+                                    ? 'Add secondary skills'
+                                    : profile.secondarySkills.join(', '),
+                                style: TextStyles.bodyMedium.copyWith(
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.7,
+                                  ),
+                                  height: 1.5,
+                                ),
                               ),
                             ),
                           ],
@@ -510,53 +789,6 @@ class ProfileScreenContent extends StatelessWidget {
                             style: TextStyles.bodySmall.copyWith(
                               color: colorScheme.onSurface.withValues(
                                 alpha: .5,
-                              ),
-                            ),
-                          ),
-                          VSpace.xl,
-
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: Insets.lg,
-                            ),
-                            child: SizedBox(
-                              width: double.infinity,
-                              child: SecondaryBtn(
-                                icon: Ionicons.log_out_outline,
-                                label: 'Logout',
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: UiText(
-                                        text: 'Logout',
-                                        style: TextStyles.titleLarge,
-                                      ),
-                                      content: UiText(
-                                        text:
-                                            'Are you sure you want to logout?',
-                                        style: TextStyles.bodyLarge,
-                                      ),
-                                      actions: [
-                                        TextBtn(
-                                          'Cancel',
-                                          onPressed: () =>
-                                              Navigator.pop(context),
-                                        ),
-                                        TextBtn(
-                                          'Logout',
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            context.read<AppBloc>().add(
-                                              AppLogoutRequested(),
-                                            );
-                                          },
-                                          color: colorScheme.error,
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
                               ),
                             ),
                           ),
@@ -581,75 +813,57 @@ class ProfileScreenContent extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard({
-    required BuildContext context,
-    required IconData icon,
-    required String value,
-    required String label,
-  }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Container(
-      padding: EdgeInsets.all(Insets.med),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-        borderRadius: Corners.medBorder,
-        border: Border.all(color: colorScheme.outline.withValues(alpha: .1)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: colorScheme.primary, size: IconSizes.med),
-          VSpace.sm,
-          UiText(
-            text: value,
-            style: TextStyles.titleLarge.copyWith(fontWeight: FontWeight.bold),
-          ),
-          VSpace.xs,
-          UiText(
-            text: label,
-            style: TextStyles.bodySmall.copyWith(
-              color: colorScheme.onSurface.withValues(alpha: .6),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStandardSection({
+  Widget _buildInteractableSection({
     required BuildContext context,
     required IconData icon,
     required String title,
     required Widget content,
+    required VoidCallback onTap,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: Insets.lg),
-      child: Container(
-        padding: EdgeInsets.all(Insets.lg),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainer,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: Corners.medBorder,
-          border: Border.all(color: colorScheme.outline.withValues(alpha: .1)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(Insets.lg),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainer,
+              borderRadius: Corners.medBorder,
+              border: Border.all(
+                color: colorScheme.outline.withValues(alpha: .1),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, color: colorScheme.primary, size: IconSizes.med),
-                HSpace.sm,
-                UiText(
-                  text: title,
-                  style: TextStyles.titleMedium.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Icon(icon, color: colorScheme.primary, size: IconSizes.med),
+                    HSpace.sm,
+                    UiText(
+                      text: title,
+                      style: TextStyles.titleMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(
+                      Ionicons.chevron_forward,
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                      size: IconSizes.sm,
+                    ),
+                  ],
                 ),
+                VSpace.med,
+                content,
               ],
             ),
-            VSpace.med,
-            content,
-          ],
+          ),
         ),
       ),
     );
@@ -673,9 +887,6 @@ class ProfileScreenContent extends StatelessWidget {
     return '${months[date.month - 1]} ${date.year}';
   }
 
-  // Add this to the top of profile_screen.dart to navigate to edit screen:
-
-  // In _ProfileScreenContentState, replace _showEditProfileDialog with:
   void _navigateToEditProfile(BuildContext context, UserProfile profile) {
     Navigator.push(
       context,
@@ -693,11 +904,11 @@ class ProfileScreenContent extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final controller = TextEditingController(text: profile.bio);
 
-    showModalBottomSheet(
+    UiUtils.showGlobalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
+      useRootNavigator: true,
+      builder: (context) => Container(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
         ),

@@ -99,6 +99,41 @@ class MenuScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              VSpace.med,
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: Insets.lg),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        context: context,
+                        icon: Ionicons.star,
+                        value: user.rating.toStringAsFixed(1),
+                        label: 'Rating',
+                      ),
+                    ),
+                    HSpace.med,
+                    Expanded(
+                      child: _buildStatCard(
+                        context: context,
+                        icon: Ionicons.chatbox_ellipses_outline,
+                        value: '${user.totalReviews}',
+                        label: 'Reviews',
+                      ),
+                    ),
+                    HSpace.med,
+                    Expanded(
+                      child: _buildStatCard(
+                        context: context,
+                        icon: Ionicons.briefcase,
+                        value: '${user.completedJobs}',
+                        label: 'Jobs Done',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              VSpace.xl,
 
               const Divider(),
 
@@ -201,6 +236,41 @@ class MenuScreen extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildStatCard({
+    required BuildContext context,
+    required IconData icon,
+    required String value,
+    required String label,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      padding: EdgeInsets.all(Insets.med),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
+        borderRadius: Corners.medBorder,
+        border: Border.all(color: colorScheme.outline.withValues(alpha: .1)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: colorScheme.primary, size: IconSizes.med),
+          VSpace.sm,
+          UiText(
+            text: value,
+            style: TextStyles.titleLarge.copyWith(fontWeight: FontWeight.bold),
+          ),
+          VSpace.xs,
+          UiText(
+            text: label,
+            style: TextStyles.bodySmall.copyWith(
+              color: colorScheme.onSurface.withValues(alpha: .6),
+            ),
+          ),
+        ],
       ),
     );
   }

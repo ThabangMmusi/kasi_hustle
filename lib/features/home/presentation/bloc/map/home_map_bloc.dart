@@ -28,6 +28,7 @@ class HomeMapBloc extends Bloc<HomeMapEvent, HomeMapState> {
         icon: Ionicons.briefcase,
         color: theme.colorScheme.primary,
         iconColor: theme.colorScheme.onPrimary,
+        size: 26,
       );
 
       // 2. Load Map Style (Optional/Placeholder)

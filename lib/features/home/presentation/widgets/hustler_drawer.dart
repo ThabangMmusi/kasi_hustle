@@ -141,35 +141,35 @@ class HustlerDrawer extends StatelessWidget {
                       ],
                     ),
                     VSpace.lg,
-                    // Rating
-                    Row(
-                      children: [
-                        Icon(Ionicons.star, size: 16, color: Colors.amber),
-                        HSpace.xs,
-                        RichText(
-                          text: TextSpan(
-                            style: TextStyles.bodyMedium.copyWith(
-                              color: colorScheme.onSurface,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: user.rating.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              TextSpan(
-                                text: ' Rating',
-                                style: TextStyle(
-                                  color: colorScheme.onSurface.withValues(
-                                    alpha: 0.6,
-                                  ),
-                                ),
-                              ),
-                            ],
+                    // Stats Row
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: Insets.sm),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildStatItem(
+                            context,
+                            label: 'Rating',
+                            value: user.rating.toStringAsFixed(1),
+                            icon: Ionicons.star,
+                            color: Colors.amber,
                           ),
-                        ),
-                      ],
+                          _buildStatItem(
+                            context,
+                            label: 'Reviews',
+                            value: '${user.totalReviews}',
+                            icon: Ionicons.chatbox_ellipses,
+                            color: colorScheme.primary,
+                          ),
+                          _buildStatItem(
+                            context,
+                            label: 'Jobs',
+                            value: '${user.completedJobs}',
+                            icon: Ionicons.briefcase,
+                            color: colorScheme.primary,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -297,6 +297,41 @@ class HustlerDrawer extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildStatItem(
+    BuildContext context, {
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        VSpace.xs,
+        UiText(
+          text: value,
+          style: TextStyles.titleMedium.copyWith(fontWeight: FontWeight.bold),
+        ),
+        UiText(
+          text: label,
+          style: TextStyles.bodySmall.copyWith(
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
+            fontSize: 10,
+          ),
+        ),
+      ],
     );
   }
 }

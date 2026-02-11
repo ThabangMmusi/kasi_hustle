@@ -94,19 +94,19 @@ class _LoginScreenContentState extends State<LoginScreenContent>
   @override
   Widget build(BuildContext context) {
     // Ensure system bars match the app theme for this screen.
-    final ThemeData theme = Theme.of(context);
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: theme.brightness == Brightness.dark
-            ? Brightness.light
-            : Brightness.dark,
-        systemNavigationBarColor: theme.colorScheme.surface,
-        systemNavigationBarIconBrightness: theme.brightness == Brightness.dark
-            ? Brightness.light
-            : Brightness.dark,
-      ),
-    );
+    // final ThemeData theme = Theme.of(context);
+    // SystemChrome.setSystemUIOverlayStyle(
+    //   SystemUiOverlayStyle(
+    //     statusBarColor: Colors.transparent,
+    //     statusBarIconBrightness: theme.brightness == Brightness.dark
+    //         ? Brightness.light
+    //         : Brightness.dark,
+    //     systemNavigationBarColor: theme.colorScheme.surface,
+    //     systemNavigationBarIconBrightness: theme.brightness == Brightness.dark
+    //         ? Brightness.light
+    //         : Brightness.dark,
+    //   ),
+    // );
     return Scaffold(
       body: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {

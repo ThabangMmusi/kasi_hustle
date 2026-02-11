@@ -49,4 +49,21 @@ class Job {
           : [],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'location': location,
+      'latitude': latitude,
+      'longitude': longitude,
+      'budget': budget,
+      'created_by': createdBy,
+      'created_at': createdAt.toIso8601String(),
+      'status': status,
+      'image_urls': imageUrls,
+      'required_skills': requiredSkills,
+    };
+  }
 }

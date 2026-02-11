@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Centralized service for managing the current user's profile across the app
 /// This ensures all features (home, search, profile, etc.) use the same user data
@@ -13,6 +15,7 @@ class UserProfileService {
   // Current user profile - cached from Supabase
   UserProfile? _currentUserProfile;
   bool _isInitialized = false;
+  static const String _profileCacheKey = 'cached_user_profile';
 
   /// Get the current logged-in user's profile
   UserProfile? get currentUser => _currentUserProfile;
@@ -30,6 +33,18 @@ class UserProfileService {
     if (_isInitialized) return isLoggedIn;
 
     print('🔄 Initializing UserProfileService...');
+    final prefs = await SharedPreferences.getInstance();
+
+    // 1. Load from Cache First
+    final cachedJson = prefs.getString(_profileCacheKey);
+    if (cachedJson != null) {
+      try {
+        _currentUserProfile = UserProfile.fromJson(jsonDecode(cachedJson));
+        print('✅ User profile loaded from cache');
+      } catch (e) {
+        print('⚠️ Failed to load profile from cache: $e');
+      }
+    }
 
     try {
       final supabase = Supabase.instance.client;
@@ -45,15 +60,33 @@ class UserProfileService {
             .eq('id', session.user.id)
             .single();
 
-        _currentUserProfile = UserProfile.fromJson(response);
-        print('✅ User profile loaded: ${_currentUserProfile?.firstName}');
+        var profile = UserProfile.fromJson(response);
+
+        // Inject Email from Auth Session (as it's not in public profiles usually)
+        if (session.user.email != null) {
+          profile = profile.copyWith(email: session.user.email);
+        }
+
+        _currentUserProfile = profile;
+
+        // Update Cache
+        await prefs.setString(
+          _profileCacheKey,
+          jsonEncode(_currentUserProfile!.toJson()),
+        );
+
+        print(
+          '✅ User profile loaded from network: ${_currentUserProfile?.firstName}',
+        );
       } else {
         print('ℹ️ No Supabase session found');
-        _currentUserProfile = null;
+        if (supabase.auth.currentUser == null) {
+          _currentUserProfile = null;
+        }
       }
     } catch (e) {
-      print('❌ Failed to initialize: $e');
-      _currentUserProfile = null;
+      print('❌ Failed to initialize from network: $e');
+      // Keep cached profile if we have it
     }
 
     _isInitialized = true;
@@ -71,10 +104,40 @@ class UserProfileService {
   /// Set the current user profile (called after auth/onboarding)
   /// Also saves to Supabase
   Future<void> setCurrentUser(UserProfile profile) async {
+    final supabase = Supabase.instance.client;
+
+    // Check if email changed explicitly and update Auth
+    // Note: This often triggers email confirmation flow
+    if (profile.email != null && _currentUserProfile?.email != profile.email) {
+      try {
+        await supabase.auth.updateUser(UserAttributes(email: profile.email));
+        print('📧 Auth email update requested: ${profile.email}');
+      } catch (e) {
+        print('⚠️ Failed to update auth email: $e');
+        // Depending on requirements, we might want to rethrow or inform user
+      }
+    }
+
     _currentUserProfile = profile;
 
-    final supabase = Supabase.instance.client;
+    // Remove email from JSON for profile table update if it's not a column
+    // The model's toJson should hopefully handle this or we rely on Postgres ignoring extra json fields if passed as jsonb,
+    // BUT supbase .upsert expects exact columns usually.
+    // Ensure UserProfile.toJson() DOES NOT include 'email' if it's not in DB.
+    // I modified UserProfile.toJson to commented out email, so it should suffice.
+    // However, phone_number IS in toJson now.
+
     await supabase.from('profiles').upsert(profile.toJson());
+
+    // Update Cache
+    final prefs = await SharedPreferences.getInstance();
+    // For cache, we WANT email. But toJson excludes it.
+    // We should probably include it in cache.
+    // Let's create a full json for cache.
+    final cacheJson = profile.toJson();
+    if (profile.email != null) cacheJson['email'] = profile.email;
+
+    await prefs.setString(_profileCacheKey, jsonEncode(cacheJson));
 
     print('✅ User profile saved: ${profile.firstName} ${profile.lastName}');
   }
@@ -87,6 +150,10 @@ class UserProfileService {
     // Sign out from Supabase
     final supabase = Supabase.instance.client;
     await supabase.auth.signOut();
+
+    // Clear Cache
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_profileCacheKey);
 
     print('🚪 User logged out, profile cleared');
   }

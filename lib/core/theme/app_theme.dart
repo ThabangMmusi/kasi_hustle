@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'styles.dart';
 
 // ==================== COLORS ====================
@@ -82,6 +83,13 @@ class KasiTheme {
           color: AppColors.darkTextPrimary,
           fontSize: 20,
           fontWeight: FontWeight.bold,
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          systemNavigationBarIconBrightness: Brightness.light,
+          systemNavigationBarContrastEnforced: false,
         ),
       ),
 
@@ -293,6 +301,13 @@ class KasiTheme {
         centerTitle: false,
         titleTextStyle: TextStyles.titleLarge.copyWith(
           color: AppColors.lightTextPrimary,
+        ),
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          systemNavigationBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarIconBrightness: Brightness.dark,
+          systemNavigationBarContrastEnforced: false,
         ),
       ),
 

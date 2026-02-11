@@ -39,15 +39,22 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   ) async {
     if (state is ProfileLoaded) {
       final currentState = state as ProfileLoaded;
+      // Optimistic update or waiting?
+      // For "instant" feel, we might want to emit Loaded immediately, but best practice is Updating -> Loaded.
+      // Given requirements "instant update", we can do it quickly.
       emit(ProfileUpdating(currentState.profile));
 
       try {
-        await Future.delayed(const Duration(seconds: 1));
+        // Persist change
+        await _userProfileService.setCurrentUser(event.profile);
 
-        // Simply use the updated profile from the event
+        // Emit new state with updated profile
         emit(ProfileLoaded(profile: event.profile, isEditing: false));
       } catch (e) {
+        // Revert or show error. For now show error.
         emit(ProfileError('Failed to update profile: $e'));
+        // Optionally reload original profile
+        add(LoadProfile());
       }
     }
   }

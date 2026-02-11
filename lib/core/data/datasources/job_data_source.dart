@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:kasi_hustle/features/home/domain/models/job.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
 import 'package:kasi_hustle/core/services/user_profile_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -14,12 +16,37 @@ abstract class JobDataSource {
 
 class JobDataSourceImpl implements JobDataSource {
   final SupabaseClient _supabaseClient;
+  static const String _jobsCacheKey = 'cached_jobs_list';
 
   JobDataSourceImpl(this._supabaseClient);
+
   @override
   Future<List<Job>> getAllJobs() async {
-    final response = await _supabaseClient.from('jobs').select();
-    return response.map((json) => Job.fromJson(json)).toList();
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      // 1. Try to fetch from network
+      final response = await _supabaseClient
+          .from('jobs')
+          .select()
+          .order('created_at', ascending: false);
+
+      final jobs = response.map((json) => Job.fromJson(json)).toList();
+
+      // 2. Cache top 20 jobs
+      final jobsToCache = jobs.take(20).toList();
+      final jobsJson = jobsToCache.map((job) => job.toJson()).toList();
+      await prefs.setString(_jobsCacheKey, jsonEncode(jobsJson));
+
+      return jobs;
+    } catch (e) {
+      // 3. Fallback to cache
+      final cachedString = prefs.getString(_jobsCacheKey);
+      if (cachedString != null) {
+        final List<dynamic> jsonList = jsonDecode(cachedString);
+        return jsonList.map((json) => Job.fromJson(json)).toList();
+      }
+      rethrow;
+    }
   }
 
   @override

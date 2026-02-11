@@ -1,19 +1,19 @@
+import 'dart:async';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
+import 'package:kasi_hustle/core/utils/ui_utils.dart';
 import 'package:kasi_hustle/core/widgets/buttons/buttons.dart';
-import 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart';
-import 'package:kasi_hustle/core/widgets/buttons/text_btn.dart';
 import 'package:kasi_hustle/core/widgets/styled_text_input.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
+import 'package:kasi_hustle/features/auth/bloc/app_bloc.dart';
 import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_bloc.dart';
 import 'package:kasi_hustle/features/profile/presentation/bloc/profile_event.dart';
-import 'package:kasi_hustle/core/widgets/skill_selection_widget.dart';
-import 'package:kasi_hustle/core/widgets/buttons/delete_btn.dart';
-import 'package:kasi_hustle/features/auth/bloc/app_bloc.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final UserProfile profile;
@@ -27,28 +27,16 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
-  late TextEditingController _bioController;
-  late List<String> _primarySkills;
-  late List<String> _secondarySkills;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
 
-  final List<String> _availableSkills = [
-    'Plumbing',
-    'Electrical',
-    'Carpentry',
-    'Painting',
-    'Cleaning',
-    'Gardening',
-    'Tiling',
-    'Roofing',
-    'Welding',
-    'Moving',
-    'Handyman',
-    'Security',
-    'Catering',
-    'Photography',
-    'Hair & Beauty',
-    'Tutoring',
-  ];
+  final FocusNode _firstNameFocus = FocusNode();
+  final FocusNode _lastNameFocus = FocusNode();
+  final FocusNode _emailFocus = FocusNode();
+  final FocusNode _phoneFocus = FocusNode();
+
+  bool _isOffline = false;
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   @override
   void initState() {
@@ -57,518 +45,252 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       text: widget.profile.firstName,
     );
     _lastNameController = TextEditingController(text: widget.profile.lastName);
-    _bioController = TextEditingController(text: widget.profile.bio);
-    _primarySkills = List<String>.from(widget.profile.primarySkills);
-    _secondarySkills = List<String>.from(widget.profile.secondarySkills);
+    _emailController = TextEditingController(text: widget.profile.email ?? '');
+    _phoneController = TextEditingController(
+      text: widget.profile.phoneNumber ?? '',
+    );
+
+    _firstNameFocus.addListener(
+      () => _onFocusChange(_firstNameFocus, 'firstName'),
+    );
+    _lastNameFocus.addListener(
+      () => _onFocusChange(_lastNameFocus, 'lastName'),
+    );
+    _emailFocus.addListener(() => _onFocusChange(_emailFocus, 'email'));
+    _phoneFocus.addListener(() => _onFocusChange(_phoneFocus, 'phone'));
+
+    _checkInitialConnectivity();
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
+      results,
+    ) {
+      setState(() {
+        // Fix: Check if results contains 'none' properly.
+        // Wait, connectivity_plus 6.0+ returns List<ConnectivityResult>.
+        // 'none' implies NO connection.
+        _isOffline =
+            results.contains(ConnectivityResult.none) && results.length == 1;
+        // If list has mobile or wifi, it's online. If list has ONLY none, it's offline.
+        // Actually, check if ANY valid connection exists.
+        final hasConnection =
+            results.contains(ConnectivityResult.mobile) ||
+            results.contains(ConnectivityResult.wifi) ||
+            results.contains(ConnectivityResult.ethernet) ||
+            results.contains(ConnectivityResult.vpn) ||
+            results.contains(ConnectivityResult.other);
+        _isOffline = !hasConnection;
+      });
+    });
+  }
+
+  Future<void> _checkInitialConnectivity() async {
+    final results = await Connectivity().checkConnectivity();
+    setState(() {
+      final hasConnection =
+          results.contains(ConnectivityResult.mobile) ||
+          results.contains(ConnectivityResult.wifi) ||
+          results.contains(ConnectivityResult.ethernet) ||
+          results.contains(ConnectivityResult.vpn) ||
+          results.contains(ConnectivityResult.other);
+      _isOffline = !hasConnection;
+    });
   }
 
   @override
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _bioController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _firstNameFocus.dispose();
+    _lastNameFocus.dispose();
+    _emailFocus.dispose();
+    _phoneFocus.dispose();
+    _connectivitySubscription.cancel();
     super.dispose();
   }
 
-  void _showPrimarySkillsBottomSheet() {
-    final tempPrimarySkills = List<String>.from(_primarySkills);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useRootNavigator: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
-          final theme = Theme.of(context);
-          final colorScheme = theme.colorScheme;
-
-          // Filter out skills already in secondary
-          final availableSkills = _availableSkills
-              .where((skill) => !_secondarySkills.contains(skill))
-              .toList();
-
-          void toggleSkill(String skill) {
-            setModalState(() {
-              if (tempPrimarySkills.contains(skill)) {
-                tempPrimarySkills.remove(skill);
-              } else {
-                if (tempPrimarySkills.length < 5) {
-                  tempPrimarySkills.add(skill);
-                }
-              }
-            });
-          }
-
-          return DraggableScrollableSheet(
-            initialChildSize: 0.6,
-            minChildSize: 0.5,
-            maxChildSize: 0.9,
-            builder: (context, scrollController) => Container(
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Handle bar - wrapped in GestureDetector to allow dragging
-                  GestureDetector(
-                    onVerticalDragUpdate: (_) {},
-                    child: Container(
-                      margin: EdgeInsets.only(top: Insets.med),
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: colorScheme.outline.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-
-                  // Header - also draggable
-                  GestureDetector(
-                    onVerticalDragUpdate: (_) {},
-                    child: Padding(
-                      padding: EdgeInsets.all(Insets.lg),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          UiText(
-                            text: 'Primary Skills (Top 5)',
-                            style: TextStyles.titleLarge,
-                          ),
-                          TextBtn(
-                            'Clear',
-                            onPressed: () {
-                              setModalState(() {
-                                tempPrimarySkills.clear();
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  Divider(
-                    height: 1,
-                    color: colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-
-                  Expanded(
-                    child: SingleChildScrollView(
-                      controller: scrollController,
-                      padding: EdgeInsets.symmetric(horizontal: Insets.lg),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          VSpace.lg,
-                          UiText(
-                            text: 'Select up to 5 skills you are best at.',
-                            style: TextStyles.bodyMedium.copyWith(
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
-                            ),
-                          ),
-                          VSpace.med,
-                          SkillSelectionWidget(
-                            availableSkills: availableSkills,
-                            selectedSkills: tempPrimarySkills,
-                            onSkillSelected: toggleSkill,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Bottom actions
-                  Container(
-                    padding: EdgeInsets.all(Insets.lg),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, -2),
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextBtn(
-                              'Cancel',
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                          ),
-                          HSpace.med,
-                          Expanded(
-                            flex: 2,
-                            child: PrimaryBtn(
-                              onPressed: tempPrimarySkills.isEmpty
-                                  ? null
-                                  : () {
-                                      setState(() {
-                                        _primarySkills = tempPrimarySkills;
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                              label: 'Apply',
-                              icon: Ionicons.checkmark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _showSecondarySkillsBottomSheet() {
-    final tempSecondarySkills = List<String>.from(_secondarySkills);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useRootNavigator: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
-          final theme = Theme.of(context);
-          final colorScheme = theme.colorScheme;
-
-          // Filter out skills already in primary
-          final availableSkills = _availableSkills
-              .where((skill) => !_primarySkills.contains(skill))
-              .toList();
-
-          void toggleSkill(String skill) {
-            setModalState(() {
-              if (tempSecondarySkills.contains(skill)) {
-                tempSecondarySkills.remove(skill);
-              } else {
-                tempSecondarySkills.add(skill);
-              }
-            });
-          }
-
-          return DraggableScrollableSheet(
-            initialChildSize: 0.6,
-            minChildSize: 0.5,
-            maxChildSize: 0.9,
-            builder: (context, scrollController) => Container(
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(24),
-                  topRight: Radius.circular(24),
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Handle bar - wrapped in GestureDetector to allow dragging
-                  GestureDetector(
-                    onVerticalDragUpdate: (_) {},
-                    child: Container(
-                      margin: EdgeInsets.only(top: Insets.med),
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: colorScheme.outline.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-
-                  // Header - also draggable
-                  GestureDetector(
-                    onVerticalDragUpdate: (_) {},
-                    child: Padding(
-                      padding: EdgeInsets.all(Insets.lg),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          UiText(
-                            text: 'Additional Skills',
-                            style: TextStyles.titleLarge,
-                          ),
-                          TextBtn(
-                            'Clear',
-                            onPressed: () {
-                              setModalState(() {
-                                tempSecondarySkills.clear();
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  Divider(
-                    height: 1,
-                    color: colorScheme.outline.withValues(alpha: 0.2),
-                  ),
-
-                  Expanded(
-                    child: SingleChildScrollView(
-                      controller: scrollController,
-                      padding: EdgeInsets.symmetric(horizontal: Insets.lg),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          VSpace.lg,
-                          UiText(
-                            text: 'Select other skills you offer.',
-                            style: TextStyles.bodyMedium.copyWith(
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
-                            ),
-                          ),
-                          VSpace.med,
-                          SkillSelectionWidget(
-                            availableSkills: availableSkills,
-                            selectedSkills: tempSecondarySkills,
-                            onSkillSelected: toggleSkill,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Bottom actions
-                  Container(
-                    padding: EdgeInsets.all(Insets.lg),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, -2),
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextBtn(
-                              'Cancel',
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                          ),
-                          HSpace.med,
-                          Expanded(
-                            flex: 2,
-                            child: PrimaryBtn(
-                              onPressed: () {
-                                setState(() {
-                                  _secondarySkills = tempSecondarySkills;
-                                });
-                                Navigator.pop(context);
-                              },
-                              label: 'Apply',
-                              icon: Ionicons.checkmark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildSkillSelectionItem({
-    required BuildContext context,
-    required String title,
-    required List<String> selectedSkills,
-    required VoidCallback onTap,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final summary = selectedSkills.isEmpty
-        ? 'None selected'
-        : selectedSkills.join(', ');
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: Corners.medBorder,
-      child: Container(
-        padding: EdgeInsets.all(Insets.lg),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: Corners.medBorder,
-          border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  UiText(
-                    text: title,
-                    style: TextStyles.titleMedium.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  VSpace.xs,
-                  Text(
-                    summary,
-                    style: TextStyles.bodySmall.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Ionicons.chevron_forward,
-              color: colorScheme.onSurface.withValues(alpha: 0.4),
-              size: IconSizes.sm,
-            ),
-          ],
-        ),
-      ),
-    );
+  void _onFocusChange(FocusNode node, String field) {
+    if (!node.hasFocus) {
+      _saveProfile();
+    }
   }
 
   void _saveProfile() {
-    if (_firstNameController.text.trim().isEmpty ||
-        _lastNameController.text.trim().isEmpty) {
+    if (_isOffline) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: UiText(text: 'First and last name cannot be empty'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Text('Cannot save changes while offline.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
       return;
     }
 
-    if (_primarySkills.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: UiText(text: 'Please select at least one primary skill'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // Create updated profile using copyWith
     final updatedProfile = widget.profile.copyWith(
       firstName: _firstNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
-      primarySkills: _primarySkills,
-      secondarySkills: _secondarySkills,
-      bio: _bioController.text.trim().isEmpty
+      email: _emailController.text.trim().isEmpty
           ? null
-          : _bioController.text.trim(),
+          : _emailController.text.trim(),
+      phoneNumber: _phoneController.text.trim().isEmpty
+          ? null
+          : _phoneController.text.trim(),
     );
 
-    context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
-
-    Navigator.pop(context);
+    // Only update if changes were made
+    if (updatedProfile.firstName != widget.profile.firstName ||
+        updatedProfile.lastName != widget.profile.lastName ||
+        updatedProfile.email != widget.profile.email ||
+        updatedProfile.phoneNumber != widget.profile.phoneNumber) {
+      context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
+    }
   }
 
-  void _showDeleteConfirmationBottomSheet() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final mediaQuery = MediaQuery.of(context);
-
-    showModalBottomSheet(
+  void _showMoreOptions(BuildContext context) {
+    UiUtils.showGlobalBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      useRootNavigator: true,
+      builder: (context) {
+        final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: Insets.lg).copyWith(
+            bottom: bottomPadding + Insets.med,
+          ), // Add dynamic bottom padding
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.all(Radius.circular(24)),
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: Insets.lg,
+            vertical: Insets.sm,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              VSpace.lg,
+              ListTile(
+                leading: Icon(
+                  Ionicons.log_out_outline,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: UiText(text: 'Sign Out', style: TextStyles.bodyLarge),
+                onTap: () {
+                  Navigator.pop(context); // Close sheet
+                  _showLogoutDialog(context);
+                },
+              ),
+              Divider(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.1),
+              ),
+              ListTile(
+                leading: Icon(
+                  Ionicons.trash_outline,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+                title: UiText(
+                  text: 'Delete Account',
+                  style: TextStyles.bodyLarge.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showDeleteAccountSheet(context);
+                },
+              ),
+              VSpace.med,
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: UiText(text: 'Logout', style: TextStyles.titleLarge),
+        content: UiText(
+          text: 'Are you sure you want to logout?',
+          style: TextStyles.bodyLarge,
+        ),
+        actions: [
+          TextBtn('Cancel', onPressed: () => Navigator.pop(context)),
+          TextBtn(
+            'Logout',
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<AppBloc>().add(AppLogoutRequested());
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+            color: Theme.of(context).colorScheme.error,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountSheet(BuildContext context) {
+    UiUtils.showGlobalBottomSheet(
+      context: context,
+      useRootNavigator: true,
       builder: (context) => Container(
-        height: mediaQuery.size.height * 0.45,
         decoration: BoxDecoration(
-          color: colorScheme.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
           ),
         ),
+        padding: EdgeInsets.all(Insets.lg),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Handle bar
-            Container(
-              margin: EdgeInsets.only(top: Insets.med),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
+            UiText(
+              text: 'Delete Account',
+              style: TextStyles.headlineSmall.copyWith(
+                color: Theme.of(context).colorScheme.error,
               ),
             ),
-            VSpace.xl,
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: Insets.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  UiText(
-                    text: 'Delete Account?',
-                    style: TextStyles.headlineSmall.copyWith(
-                      color: colorScheme.error,
-                      fontWeight: FontWeight.bold,
-                    ),
+            VSpace.med,
+            UiText(
+              text:
+                  'This action is irreversible. All your data will be permanently removed.',
+              style: TextStyles.bodyMedium,
+            ),
+            VSpace.lg,
+            PrimaryBtn(
+              label: 'Delete Permanently',
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Delete Account functionality pending...'),
                   ),
-                  VSpace.med,
-                  UiText(
-                    text:
-                        'This action cannot be undone. All your profile data, job history, and applications will be permanently deleted.',
-                    style: TextStyles.bodyLarge.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.7),
-                      height: 1.5,
-                    ),
-                  ),
-                  VSpace.xl,
-                  VSpace.lg,
-                  SizedBox(
-                    width: double.infinity,
-                    child: DeleteBtn(
-                      onPressed: () {
-                        Navigator.pop(context); // Close bottom sheet
-                        context.read<AppBloc>().add(
-                          const AppDeleteAccountRequested(),
-                        );
-                      },
-                      label: 'Delete Permanently',
-                    ),
-                  ),
-                  VSpace.med,
-                  SizedBox(
-                    width: double.infinity,
-                    child: TextBtn(
-                      'Cancel',
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-                ],
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Colors.white,
               ),
             ),
+            VSpace.med,
+            TextBtn('Cancel', onPressed: () => Navigator.pop(context)),
+            VSpace.lg,
           ],
         ),
       ),
@@ -579,190 +301,235 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: colorScheme.surface,
-        systemNavigationBarIconBrightness: theme.brightness == Brightness.dark
-            ? Brightness.light
-            : Brightness.dark,
-      ),
-    );
+    final isVerified = widget.profile.isVerified;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
       appBar: AppBar(
+        title: UiText(text: 'Edit Profile', style: TextStyles.titleLarge),
+        centerTitle: true,
         backgroundColor: colorScheme.surface,
         elevation: 0,
-        centerTitle: false,
-        title: UiText(
-          text: 'Edit Profile',
-          style: TextStyles.titleLarge.copyWith(fontWeight: FontWeight.bold),
-        ),
         leading: IconButton(
-          icon: Icon(Ionicons.chevron_back, color: colorScheme.onSurface),
+          icon: Icon(Ionicons.close, color: colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
+            onPressed: () => _showMoreOptions(context),
+          ),
+          HSpace.sm,
+        ],
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(Insets.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Profile Picture Section
+            // Avatar
             Center(
               child: Stack(
                 children: [
                   Container(
-                    width: 120,
-                    height: 120,
+                    width: 100,
+                    height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          colorScheme.primary,
-                          colorScheme.primaryContainer,
-                        ],
-                      ),
-                      border: Border.all(color: colorScheme.primary, width: 3),
-                    ),
-                    child: widget.profile.profileImage != null
-                        ? ClipOval(
-                            child: Image.network(
-                              widget.profile.profileImage!,
+                      color: colorScheme.primaryContainer,
+                      image: widget.profile.profileImage != null
+                          ? DecorationImage(
+                              image: NetworkImage(widget.profile.profileImage!),
                               fit: BoxFit.cover,
-                            ),
-                          )
-                        : Icon(
+                            )
+                          : null,
+                    ),
+                    child: widget.profile.profileImage == null
+                        ? Icon(
                             Ionicons.person,
-                            size: 60,
-                            color: colorScheme.onPrimary,
-                          ),
+                            size: 40,
+                            color: colorScheme.onPrimaryContainer,
+                          )
+                        : null,
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
-                    child: GestureDetector(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const UiText(
-                              text: 'Upload image functionality',
-                            ),
-                            backgroundColor: colorScheme.primary,
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(Insets.sm),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: colorScheme.surface,
-                            width: 2,
-                          ),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: colorScheme.surface,
+                          width: 2,
                         ),
-                        child: Icon(
-                          Ionicons.camera_outline,
-                          color: colorScheme.onPrimary,
-                          size: IconSizes.sm,
-                        ),
+                      ),
+                      child: const Icon(
+                        Ionicons.camera,
+                        size: 16,
+                        color: Colors.white,
                       ),
                     ),
                   ),
                 ],
               ),
             ),
+            VSpace.xl,
 
-            VSpace.xxl,
+            // Verification Section
+            Container(
+              padding: EdgeInsets.all(Insets.med),
+              decoration: BoxDecoration(
+                color: isVerified
+                    ? colorScheme.secondary.withValues(alpha: 0.1)
+                    : colorScheme.surfaceContainer,
+                borderRadius: Corners.medBorder,
+                border: Border.all(
+                  color: isVerified
+                      ? colorScheme.secondary
+                      : colorScheme.outline.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    isVerified
+                        ? Ionicons.checkmark_circle
+                        : Ionicons.alert_circle_outline,
+                    color: isVerified
+                        ? colorScheme.secondary
+                        : colorScheme.onSurface,
+                  ),
+                  HSpace.med,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        UiText(
+                          text: isVerified
+                              ? 'Verified Account'
+                              : 'Not Verified',
+                          style: TextStyles.titleMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isVerified
+                                ? colorScheme.secondary
+                                : colorScheme.onSurface,
+                          ),
+                        ),
+                        if (!isVerified)
+                          UiText(
+                            text: 'Verify your account to build trust.',
+                            style: TextStyles.bodySmall,
+                          ),
+                      ],
+                    ),
+                  ),
+                  if (!isVerified)
+                    SmallPrimaryBtn(
+                      label: 'Verify',
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Verification flow coming soon'),
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+            VSpace.xl,
 
-            // Name Fields
+            // Fields
             StyledTextInput(
               controller: _firstNameController,
               label: 'First Name',
+              hintText: 'Enter your first name',
+              focusNode: _firstNameFocus,
+              enabled: !_isOffline,
             ),
-            VSpace.lg,
-
+            VSpace.med,
             StyledTextInput(
               controller: _lastNameController,
-              label: 'Last name',
+              label: 'Last Name',
+              hintText: 'Enter your last name',
+              focusNode: _lastNameFocus,
+              enabled: !_isOffline,
             ),
-
             VSpace.xl,
 
-            // Primary Skills Section - Only show for hustlers
-            if (widget.profile.userType == 'hustler') ...[
-              _buildSkillSelectionItem(
-                context: context,
-                title: 'Primary Skills',
-                selectedSkills: _primarySkills,
-                onTap: _showPrimarySkillsBottomSheet,
-              ),
-              VSpace.lg,
-              _buildSkillSelectionItem(
-                context: context,
-                title: 'Additional Skills',
-                selectedSkills: _secondarySkills,
-                onTap: _showSecondarySkillsBottomSheet,
-              ),
-              VSpace.xl,
-            ],
-
-            // Bio Field
-            UiText(
-              text: 'Bio',
-              style: TextStyles.labelLarge.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            VSpace.sm,
             StyledTextInput(
-              controller: _bioController,
-              label: 'Tell others about yourself and your experience...',
-              numLines: 5,
+              controller: _emailController,
+              label: 'Email Address',
+              hintText: 'Enter your email',
+              keyboardType: TextInputType.emailAddress,
+              focusNode: _emailFocus,
+              enabled: !_isOffline,
             ),
-            VSpace.xs,
-            UiText(
-              text:
-                  'A good bio helps clients trust you and choose you for their jobs.',
-              style: TextStyles.bodySmall.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.6),
-              ),
-            ),
-
-            VSpace.xxl,
-
-            // Save Button
-            SizedBox(
-              width: double.infinity,
-              child: PrimaryBtn(
-                onPressed: _saveProfile,
-                label: 'Save Changes',
-                icon: Ionicons.checkmark_circle_outline,
-              ),
+            VSpace.med,
+            StyledTextInput(
+              controller: _phoneController,
+              label: 'Phone Number',
+              hintText: 'Enter your phone number',
+              keyboardType: TextInputType.phone,
+              focusNode: _phoneFocus,
+              enabled: !_isOffline,
             ),
 
-            VSpace.xl,
-
-            // Delete Account Button
-            Center(
-              child: TextBtn(
-                'Delete Account',
-                onPressed: _showDeleteConfirmationBottomSheet,
-                style: ButtonStyle(
-                  foregroundColor: WidgetStateProperty.all(colorScheme.error),
+            if (_isOffline)
+              Padding(
+                padding: EdgeInsets.only(top: Insets.lg),
+                child: Container(
+                  padding: EdgeInsets.all(Insets.med),
+                  decoration: BoxDecoration(
+                    color: colorScheme.errorContainer,
+                    borderRadius: Corners.smBorder,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.wifi_off, color: colorScheme.error),
+                      HSpace.med,
+                      Expanded(
+                        child: UiText(
+                          text: 'You are offline. Editing is disabled.',
+                          style: TextStyles.bodyMedium.copyWith(
+                            color: colorScheme.error,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-
-            VSpace.med,
-
-            VSpace.xl,
           ],
         ),
+      ),
+    );
+  }
+}
+
+class SmallPrimaryBtn extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+  const SmallPrimaryBtn({
+    super.key,
+    required this.label,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: Insets.med, vertical: 0),
+        minimumSize: const Size(0, 32),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+      ),
+      child: Text(
+        label,
+        style: TextStyles.labelSmall.copyWith(fontWeight: FontWeight.bold),
       ),
     );
   }

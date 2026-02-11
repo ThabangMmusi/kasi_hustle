@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -11,9 +12,20 @@ import 'package:kasi_hustle/core/config/env_config.dart';
 import 'package:kasi_hustle/core/services/user_profile_service.dart';
 import 'package:kasi_hustle/features/auth/bloc/app_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:kasi_hustle/core/services/connectivity_service.dart';
+import 'package:kasi_hustle/core/bloc/network/network_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Enable Edge-to-Edge for transparent system bars
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarContrastEnforced: false,
+      statusBarColor: Colors.transparent,
+    ),
+  );
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
   // Initialize Google Maps with Android renderer
   final GoogleMapsFlutterPlatform mapsImplementation =
@@ -85,8 +97,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppBloc(userProfileService: UserProfileService()),
+    // Initialize services
+    final connectivityService = ConnectivityService();
+
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              NetworkBloc(connectivityService)..add(NetworkObserve()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              AppBloc(userProfileService: UserProfileService()),
+        ),
+      ],
       child: Builder(
         builder: (context) {
           // Get the AppBloc to use in router
