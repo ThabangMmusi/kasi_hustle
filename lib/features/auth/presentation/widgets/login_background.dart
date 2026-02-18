@@ -15,11 +15,17 @@ class LoginBackground extends StatelessWidget {
         final heightPercent = 1.0 - (animation.value * 0.3);
         final backgroundHeight = screenHeight * heightPercent;
 
-        return Column(
+        return Stack(
           children: [
-            SizedBox(
+            // Ensure black background is always behind everything
+            Positioned.fill(child: Container(color: Colors.black)),
+
+            // Background image
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
               height: backgroundHeight,
-              width: double.infinity,
               child: DecoratedBox(
                 decoration: const BoxDecoration(
                   image: DecorationImage(
@@ -30,7 +36,6 @@ class LoginBackground extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(child: Container(color: Colors.black)),
           ],
         );
       },

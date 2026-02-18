@@ -7,7 +7,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Delegates to shared JobDataSource for data operations
 abstract class HomeLocalDataSource {
   Future<UserProfile> getUserProfile();
-  Future<List<Job>> getJobs();
+  Future<List<Job>> getJobs({int page = 0, int limit = 10});
+  Future<void> applyForJob(String jobId, String userId);
 }
 
 class HomeLocalDataSourceImpl implements HomeLocalDataSource {
@@ -21,18 +22,23 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
   }
 
   @override
-  Future<List<Job>> getJobs() async {
+  Future<void> applyForJob(String jobId, String userId) async {
+    return await jobDataSource.applyForJob(jobId, userId);
+  }
+
+  @override
+  Future<List<Job>> getJobs({int page = 0, int limit = 10}) async {
     try {
       final supabaseClient = Supabase.instance.client;
       final currentUserId = supabaseClient.auth.currentUser?.id;
 
       if (currentUserId == null) {
         // If no user logged in, return all jobs
-        return await jobDataSource.getAllJobs();
+        return await jobDataSource.getAllJobs(page: page, limit: limit);
       }
 
       // Get all jobs
-      final allJobs = await jobDataSource.getAllJobs();
+      final allJobs = await jobDataSource.getAllJobs(page: page, limit: limit);
 
       // Get jobs the current user has already applied to
       final applicationsData = await supabaseClient
@@ -48,7 +54,7 @@ class HomeLocalDataSourceImpl implements HomeLocalDataSource {
       return allJobs.where((job) => !appliedJobIds.contains(job.id)).toList();
     } catch (e) {
       // If query fails, return all jobs
-      return await jobDataSource.getAllJobs();
+      return await jobDataSource.getAllJobs(page: page, limit: limit);
     }
   }
 }

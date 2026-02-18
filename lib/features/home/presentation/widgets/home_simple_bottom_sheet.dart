@@ -5,7 +5,7 @@ import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart';
 import 'package:kasi_hustle/core/widgets/job_card.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
-import 'package:kasi_hustle/features/home/bloc/home_bloc.dart';
+import 'package:kasi_hustle/features/home/presentation/bloc/home/home_bloc.dart';
 
 class HomeSimpleBottomSheet extends StatefulWidget {
   const HomeSimpleBottomSheet({super.key, this.onFullModeChanged});
@@ -18,6 +18,14 @@ class HomeSimpleBottomSheet extends StatefulWidget {
 
 class _HomeSimpleBottomSheetState extends State<HomeSimpleBottomSheet> {
   bool _isFullMode = false;
+  final DraggableScrollableController _sheetController =
+      DraggableScrollableController();
+
+  @override
+  void dispose() {
+    _sheetController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,19 +39,28 @@ class _HomeSimpleBottomSheetState extends State<HomeSimpleBottomSheet> {
 
         if (isLoading) return const SizedBox.shrink();
 
-        return NotificationListener<DraggableScrollableNotification>(
+        return NotificationListener<Notification>(
           onNotification: (notification) {
-            // Trigger "Full Mode" logic when we are nearly at the top
-            final isAtTop = notification.extent >= 0.99;
-            if (isAtTop != _isFullMode) {
-              setState(() {
-                _isFullMode = isAtTop;
-              });
-              widget.onFullModeChanged?.call(isAtTop);
+            // 1. Pagination Check
+            if (notification is ScrollEndNotification &&
+                notification.metrics.extentAfter < 500) {
+              context.read<HomeBloc>().add(LoadMoreJobs());
+            }
+
+            // 2. Full Mode Logic (DraggableScrollableNotification)
+            if (notification is DraggableScrollableNotification) {
+              final isAtTop = notification.extent >= 0.99;
+              if (isAtTop != _isFullMode) {
+                setState(() {
+                  _isFullMode = isAtTop;
+                });
+                widget.onFullModeChanged?.call(isAtTop);
+              }
             }
             return false;
           },
           child: DraggableScrollableSheet(
+            controller: _sheetController,
             initialChildSize: 0.5,
             minChildSize: 0.5,
             maxChildSize: 1.0,
@@ -69,8 +86,9 @@ class _HomeSimpleBottomSheetState extends State<HomeSimpleBottomSheet> {
                   ],
                 ),
                 child: CustomScrollView(
-                  controller: scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
+                  controller:
+                      scrollController, // Use the correct controller from DraggableScrollableSheet
+                  physics: const ClampingScrollPhysics(), // Better for sheets
                   slivers: [
                     // 1. Pinned Header (Handle Bar)
                     SliverPersistentHeader(
@@ -102,7 +120,7 @@ class _HomeSimpleBottomSheetState extends State<HomeSimpleBottomSheet> {
                     ),
 
                     // 3. Jobs List
-                    if (state is HomeLoaded)
+                    if (state is HomeLoaded) ...[
                       SliverPadding(
                         padding: EdgeInsets.symmetric(horizontal: Insets.lg),
                         sliver: SliverList(
@@ -117,14 +135,24 @@ class _HomeSimpleBottomSheetState extends State<HomeSimpleBottomSheet> {
                             );
                           }, childCount: jobs.length),
                         ),
-                      )
-                    else if (state is HomeError)
+                      ),
+                      if (!state.hasReachedMax)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.all(Insets.med),
+                            child: const Center(
+                              child: CircularProgressIndicator.adaptive(),
+                            ),
+                          ),
+                        ),
+                    ] else if (state is HomeError) ...[
                       SliverFillRemaining(
                         hasScrollBody: false,
                         child: Center(
                           child: _buildError(context, state.message),
                         ),
                       ),
+                    ],
 
                     // Bottom Padding
                     SliverToBoxAdapter(child: VSpace.xxl),

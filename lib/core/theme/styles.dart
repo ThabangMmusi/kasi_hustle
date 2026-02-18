@@ -287,37 +287,37 @@ class FontSizes {
 
 class Fonts {
   const Fonts._();
-  static const String poppins = "Poppins";
+  static const String raleway = "Raleway";
   // static const String otherFont = "OtherFontFamily";
 }
 
 /// TextStyles - All the core text styles for the app.
 /// Mapped to ThemeData.textTheme for consistent usage.
 /// Follows Material 3 type scale roles for naming.
-/// Assumes "Poppins" font is used.
+/// Assumes "Raleway" font is used.
 class TextStyles {
   const TextStyles._();
 
-  static const TextStyle _poppinsBase = TextStyle(
-    fontFamily: Fonts.poppins,
+  static const TextStyle _ralewayBase = TextStyle(
+    fontFamily: Fonts.raleway,
     fontWeight: FontWeight.w400,
     height: 1.5,
   );
 
   // Display Styles
-  static final TextStyle displayLarge = _poppinsBase.copyWith(
+  static final TextStyle displayLarge = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
     fontSize: FontSizes.s57,
     height: 1.12,
     letterSpacing: -0.25,
   );
-  static final TextStyle displayMedium = _poppinsBase.copyWith(
+  static final TextStyle displayMedium = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
     fontSize: FontSizes.s45,
     height: 1.15,
     letterSpacing: 0,
   );
-  static final TextStyle displaySmall = _poppinsBase.copyWith(
+  static final TextStyle displaySmall = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
     fontSize: FontSizes.s36,
     height: 1.22,
@@ -325,19 +325,19 @@ class TextStyles {
   );
 
   // Headline Styles
-  static final TextStyle headlineLarge = _poppinsBase.copyWith(
+  static final TextStyle headlineLarge = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
     fontSize: FontSizes.s32,
     height: 1.25,
     letterSpacing: 0,
   );
-  static final TextStyle headlineMedium = _poppinsBase.copyWith(
+  static final TextStyle headlineMedium = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
     fontSize: FontSizes.s28,
     height: 1.28,
     letterSpacing: 0,
   );
-  static final TextStyle headlineSmall = _poppinsBase.copyWith(
+  static final TextStyle headlineSmall = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
     fontSize: FontSizes.s24,
     height: 1.33,
@@ -345,74 +345,74 @@ class TextStyles {
   );
 
   // Title Styles
-  static final TextStyle titleLarge = _poppinsBase.copyWith(
+  static final TextStyle titleLarge = _ralewayBase.copyWith(
     fontWeight: FontWeight.w500,
-    fontSize: FontSizes.s20, // M3 is 22px, Poppins 500 (Medium)
+    fontSize: FontSizes.s20, // M3 is 22px, Raleway 500 (Medium)
     height: 1.27,
     letterSpacing: 0,
   );
-  static final TextStyle titleMedium = _poppinsBase.copyWith(
+  static final TextStyle titleMedium = _ralewayBase.copyWith(
     fontWeight: FontWeight.w500,
-    fontSize: FontSizes.s16, // M3 is 16px, Poppins 500 (Medium)
+    fontSize: FontSizes.s16, // M3 is 16px, Raleway 500 (Medium)
     height: 1.5,
     letterSpacing: 0.15,
   );
-  static final TextStyle titleSmall = _poppinsBase.copyWith(
+  static final TextStyle titleSmall = _ralewayBase.copyWith(
     fontWeight: FontWeight.w500,
-    fontSize: FontSizes.s14, // M3 is 14px, Poppins 500 (Medium)
+    fontSize: FontSizes.s14, // M3 is 14px, Raleway 500 (Medium)
     height: 1.42,
     letterSpacing: 0.1,
   );
 
   // Body Text Styles
-  static final TextStyle bodyLarge = _poppinsBase.copyWith(
+  static final TextStyle bodyLarge = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
-    fontSize: FontSizes.s16, // M3 is 16px, Poppins 400 (Regular)
+    fontSize: FontSizes.s16, // M3 is 16px, Raleway 400 (Regular)
     height: 1.5,
     letterSpacing: 0.15,
   );
-  static final TextStyle bodyMedium = _poppinsBase.copyWith(
+  static final TextStyle bodyMedium = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
-    fontSize: FontSizes.s14, // M3 is 14px, Poppins 400 (Regular)
+    fontSize: FontSizes.s14, // M3 is 14px, Raleway 400 (Regular)
     height: 1.42,
     letterSpacing: 0.25,
   );
-  static final TextStyle bodySmall = _poppinsBase.copyWith(
+  static final TextStyle bodySmall = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
-    fontSize: FontSizes.s12, // M3 is 12px, Poppins 400 (Regular)
+    fontSize: FontSizes.s12, // M3 is 12px, Raleway 400 (Regular)
     height: 1.33,
     letterSpacing: 0.4,
   );
 
   // Label Styles (Often used for buttons)
-  static final TextStyle labelLarge = _poppinsBase.copyWith(
-    fontWeight: FontWeight.w500, // M3 is 14px, Poppins 500 (Medium)
+  static final TextStyle labelLarge = _ralewayBase.copyWith(
+    fontWeight: FontWeight.w500, // M3 is 14px, Raleway 500 (Medium)
     fontSize: FontSizes.s14,
     height: 1.42,
     letterSpacing: 0.1,
   );
-  static final TextStyle labelMedium = _poppinsBase.copyWith(
+  static final TextStyle labelMedium = _ralewayBase.copyWith(
     fontWeight: FontWeight.w500,
-    fontSize: FontSizes.s12, // M3 is 12px, Poppins 500 (Medium)
+    fontSize: FontSizes.s12, // M3 is 12px, Raleway 500 (Medium)
     height: 1.33,
     letterSpacing: 0.5,
   );
-  static final TextStyle labelSmall = _poppinsBase.copyWith(
+  static final TextStyle labelSmall = _ralewayBase.copyWith(
     fontWeight: FontWeight.w500,
-    fontSize: FontSizes.s11, // M3 is 11px, Poppins 500 (Medium)
+    fontSize: FontSizes.s11, // M3 is 11px, Raleway 500 (Medium)
     height: 1.45,
     letterSpacing: 0.5,
   );
 
   // Custom styles (if needed, not directly in M3 TextTheme slots)
-  static final TextStyle caption = _poppinsBase.copyWith(
+  static final TextStyle caption = _ralewayBase.copyWith(
     fontWeight: FontWeight.w400,
     fontSize: FontSizes.s10,
     height: 1.3,
     letterSpacing: 0.4,
   );
 
-  static final TextStyle overline = _poppinsBase.copyWith(
+  static final TextStyle overline = _ralewayBase.copyWith(
     fontWeight: FontWeight.w600,
     fontSize: FontSizes.s10,
     height: 1.2,

@@ -7,8 +7,9 @@ import 'package:kasi_hustle/features/home/presentation/widgets/job_details_botto
 
 class JobCard extends StatelessWidget {
   final Job job;
+  final VoidCallback? onTap;
 
-  const JobCard({super.key, required this.job});
+  const JobCard({super.key, required this.job, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +27,11 @@ class JobCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: Corners.medBorder,
-          onTap: () {
-            JobDetailsBottomSheet.show(context, job);
-          },
+          onTap:
+              onTap ??
+              () {
+                JobDetailsBottomSheet.show(context, job);
+              },
           child: Padding(
             padding: EdgeInsets.all(Insets.lg),
             child: Column(

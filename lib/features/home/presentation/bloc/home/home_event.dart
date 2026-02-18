@@ -6,6 +6,8 @@ class LoadHomeData extends HomeEvent {}
 
 class RefreshHomeData extends HomeEvent {}
 
+class LoadMoreJobs extends HomeEvent {}
+
 class SearchJobsEvent extends HomeEvent {
   final String query;
   SearchJobsEvent(this.query);

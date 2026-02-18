@@ -3,7 +3,7 @@ import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
 
 abstract class HomeRepository {
   Future<UserProfile> getUserProfile();
-  Future<List<Job>> getJobs();
+  Future<List<Job>> getJobs({int page = 0, int limit = 10});
   List<Job> getRecommendedJobs(List<Job> allJobs, List<String> userSkills);
   List<Job> searchJobs(List<Job> jobs, String query);
   List<Job> filterJobsBySkill(List<Job> jobs, String skill);

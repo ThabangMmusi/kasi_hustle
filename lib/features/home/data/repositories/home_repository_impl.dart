@@ -2,7 +2,6 @@ import 'package:kasi_hustle/features/home/data/datasources/home_local_data_sourc
 import 'package:kasi_hustle/features/home/domain/models/job.dart';
 import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
 import 'package:kasi_hustle/features/home/domain/repositories/home_repository.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeRepositoryImpl implements HomeRepository {
   final HomeLocalDataSource localDataSource;
@@ -19,9 +18,9 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<List<Job>> getJobs() async {
+  Future<List<Job>> getJobs({int page = 0, int limit = 10}) async {
     try {
-      return await localDataSource.getJobs();
+      return await localDataSource.getJobs(page: page, limit: limit);
     } catch (e) {
       rethrow;
     }
@@ -67,13 +66,7 @@ class HomeRepositoryImpl implements HomeRepository {
     required String userId,
   }) async {
     try {
-      final supabaseClient = Supabase.instance.client;
-      await supabaseClient.from('applications').insert({
-        'job_id': jobId,
-        'user_id': userId,
-        'status': 'pending',
-        'applied_at': DateTime.now().toIso8601String(),
-      });
+      await localDataSource.applyForJob(jobId, userId);
     } catch (e) {
       throw Exception('Failed to submit application: $e');
     }

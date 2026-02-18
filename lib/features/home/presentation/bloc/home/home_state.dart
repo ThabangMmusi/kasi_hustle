@@ -21,7 +21,10 @@ class HomeLoaded extends HomeState {
     required this.displayedJobs,
     this.selectedSkillFilter,
     this.applyingJobIds = const [],
+    this.hasReachedMax = false,
   });
+
+  final bool hasReachedMax;
 
   HomeLoaded copyWith({
     UserProfile? user,
@@ -31,6 +34,7 @@ class HomeLoaded extends HomeState {
     String? selectedSkillFilter,
     List<String>? applyingJobIds,
     bool clearFilter = false,
+    bool? hasReachedMax,
   }) {
     return HomeLoaded(
       user: user ?? this.user,
@@ -41,6 +45,7 @@ class HomeLoaded extends HomeState {
           ? null
           : (selectedSkillFilter ?? this.selectedSkillFilter),
       applyingJobIds: applyingJobIds ?? this.applyingJobIds,
+      hasReachedMax: hasReachedMax ?? this.hasReachedMax,
     );
   }
 }

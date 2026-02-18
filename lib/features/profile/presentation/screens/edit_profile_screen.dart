@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:kasi_hustle/core/utils/ui_utils.dart';
 import 'package:kasi_hustle/core/widgets/buttons/buttons.dart';
-import 'package:kasi_hustle/core/widgets/styled_text_input.dart';
+import 'package:kasi_hustle/core/widgets/skill_selection_widget.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
 import 'package:kasi_hustle/features/auth/bloc/app_bloc.dart';
 import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
@@ -25,52 +25,17 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  late TextEditingController _firstNameController;
-  late TextEditingController _lastNameController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
-
-  final FocusNode _firstNameFocus = FocusNode();
-  final FocusNode _lastNameFocus = FocusNode();
-  final FocusNode _emailFocus = FocusNode();
-  final FocusNode _phoneFocus = FocusNode();
-
   bool _isOffline = false;
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
-    _firstNameController = TextEditingController(
-      text: widget.profile.firstName,
-    );
-    _lastNameController = TextEditingController(text: widget.profile.lastName);
-    _emailController = TextEditingController(text: widget.profile.email ?? '');
-    _phoneController = TextEditingController(
-      text: widget.profile.phoneNumber ?? '',
-    );
-
-    _firstNameFocus.addListener(
-      () => _onFocusChange(_firstNameFocus, 'firstName'),
-    );
-    _lastNameFocus.addListener(
-      () => _onFocusChange(_lastNameFocus, 'lastName'),
-    );
-    _emailFocus.addListener(() => _onFocusChange(_emailFocus, 'email'));
-    _phoneFocus.addListener(() => _onFocusChange(_phoneFocus, 'phone'));
-
     _checkInitialConnectivity();
     _connectivitySubscription = Connectivity().onConnectivityChanged.listen((
       results,
     ) {
       setState(() {
-        // Fix: Check if results contains 'none' properly.
-        // Wait, connectivity_plus 6.0+ returns List<ConnectivityResult>.
-        // 'none' implies NO connection.
-        _isOffline =
-            results.contains(ConnectivityResult.none) && results.length == 1;
-        // If list has mobile or wifi, it's online. If list has ONLY none, it's offline.
-        // Actually, check if ANY valid connection exists.
         final hasConnection =
             results.contains(ConnectivityResult.mobile) ||
             results.contains(ConnectivityResult.wifi) ||
@@ -97,53 +62,367 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   void dispose() {
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _firstNameFocus.dispose();
-    _lastNameFocus.dispose();
-    _emailFocus.dispose();
-    _phoneFocus.dispose();
     _connectivitySubscription.cancel();
     super.dispose();
   }
 
-  void _onFocusChange(FocusNode node, String field) {
-    if (!node.hasFocus) {
-      _saveProfile();
-    }
+  final List<String> _availableSkills = [
+    'Plumbing',
+    'Electrical',
+    'Carpentry',
+    'Painting',
+    'Cleaning',
+    'Gardening',
+    'Tiling',
+    'Roofing',
+    'Welding',
+    'Moving',
+    'Handyman',
+    'Security',
+    'Catering',
+    'Photography',
+    'Hair & Beauty',
+    'Tutoring',
+  ];
+
+  void _showPrimarySkillsBottomSheet(
+    BuildContext context,
+    UserProfile profile,
+  ) {
+    final tempPrimarySkills = List<String>.from(profile.primarySkills);
+
+    final profileBloc = context.read<ProfileBloc>();
+
+    UiUtils.showGlobalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      builder: (context) => BlocProvider.value(
+        value: profileBloc,
+        child: StatefulBuilder(
+          builder: (context, setModalState) {
+            final theme = Theme.of(context);
+            final colorScheme = theme.colorScheme;
+
+            // Filter out skills already in secondary
+            final availableSkills = _availableSkills
+                .where((skill) => !profile.secondarySkills.contains(skill))
+                .toList();
+
+            void toggleSkill(String skill) {
+              setModalState(() {
+                if (tempPrimarySkills.contains(skill)) {
+                  tempPrimarySkills.remove(skill);
+                } else {
+                  if (tempPrimarySkills.length < 5) {
+                    tempPrimarySkills.add(skill);
+                  }
+                }
+              });
+            }
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.6,
+              minChildSize: 0.5,
+              maxChildSize: 0.9,
+              builder: (context, scrollController) {
+                final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal: Insets.lg).copyWith(
+                    bottom: bottomPadding + Insets.med,
+                  ), // Add dynamic bottom padding
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: const BorderRadius.all(Radius.circular(24)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    children: [
+                      // Handle bar
+                      Container(
+                        margin: EdgeInsets.only(top: Insets.med),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: colorScheme.outline.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+
+                      Padding(
+                        padding: EdgeInsets.all(Insets.lg),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            UiText(
+                              text: 'Primary Skills (Top 5)',
+                              style: TextStyles.titleLarge,
+                            ),
+                            TextBtn(
+                              'Clear',
+                              onPressed: () {
+                                setModalState(() {
+                                  tempPrimarySkills.clear();
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Divider(
+                        height: 1,
+                        color: colorScheme.outline.withValues(alpha: 0.2),
+                      ),
+
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          padding: EdgeInsets.symmetric(horizontal: Insets.lg),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              VSpace.lg,
+                              UiText(
+                                text: 'Select up to 5 skills you are best at.',
+                                style: TextStyles.bodyMedium.copyWith(
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                ),
+                              ),
+                              VSpace.med,
+                              SkillSelectionWidget(
+                                availableSkills: availableSkills,
+                                selectedSkills: tempPrimarySkills,
+                                onSkillSelected: toggleSkill,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Bottom actions
+                      Container(
+                        padding: EdgeInsets.all(Insets.lg),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, -2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextBtn(
+                                'Cancel',
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
+                            HSpace.med,
+                            Expanded(
+                              flex: 2,
+                              child: PrimaryBtn(
+                                onPressed: tempPrimarySkills.isEmpty
+                                    ? null
+                                    : () {
+                                        final updatedProfile = profile.copyWith(
+                                          primarySkills: tempPrimarySkills,
+                                        );
+                                        // Instant update
+                                        context.read<ProfileBloc>().add(
+                                          UpdateProfile(
+                                            profile: updatedProfile,
+                                          ),
+                                        );
+                                        Navigator.pop(context);
+                                      },
+                                label: 'Apply',
+                                icon: Ionicons.checkmark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
   }
 
-  void _saveProfile() {
-    if (_isOffline) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Cannot save changes while offline.'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+  void _showSecondarySkillsBottomSheet(
+    BuildContext context,
+    UserProfile profile,
+  ) {
+    final tempSecondarySkills = List<String>.from(profile.secondarySkills);
+
+    final profileBloc = context.read<ProfileBloc>();
+
+    UiUtils.showGlobalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      builder: (context) => BlocProvider.value(
+        value: profileBloc,
+        child: StatefulBuilder(
+          builder: (context, setModalState) {
+            final theme = Theme.of(context);
+            final colorScheme = theme.colorScheme;
+
+            // Filter out skills already in primary
+            final availableSkills = _availableSkills
+                .where((skill) => !profile.primarySkills.contains(skill))
+                .toList();
+
+            void toggleSkill(String skill) {
+              setModalState(() {
+                if (tempSecondarySkills.contains(skill)) {
+                  tempSecondarySkills.remove(skill);
+                } else {
+                  tempSecondarySkills.add(skill);
+                }
+              });
+            }
+
+            return DraggableScrollableSheet(
+              initialChildSize: 0.6,
+              minChildSize: 0.5,
+              maxChildSize: 0.9,
+              builder: (context, scrollController) {
+                final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+                return Container(
+                  margin: EdgeInsets.symmetric(
+                    horizontal: Insets.lg,
+                  ).copyWith(bottom: bottomPadding + Insets.med),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: const BorderRadius.all(Radius.circular(24)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    children: [
+                      Container(
+                        margin: EdgeInsets.only(top: Insets.med),
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: colorScheme.outline.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+
+                      Padding(
+                        padding: EdgeInsets.all(Insets.lg),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            UiText(
+                              text: 'Additional Skills',
+                              style: TextStyles.titleLarge,
+                            ),
+                            TextBtn(
+                              'Clear',
+                              onPressed: () {
+                                setModalState(() {
+                                  tempSecondarySkills.clear();
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Divider(
+                        height: 1,
+                        color: colorScheme.outline.withValues(alpha: 0.2),
+                      ),
+
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          padding: EdgeInsets.symmetric(horizontal: Insets.lg),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              VSpace.lg,
+                              UiText(
+                                text: 'Select other skills you offer.',
+                                style: TextStyles.bodyMedium.copyWith(
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                ),
+                              ),
+                              VSpace.med,
+                              SkillSelectionWidget(
+                                availableSkills: availableSkills,
+                                selectedSkills: tempSecondarySkills,
+                                onSkillSelected: toggleSkill,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // Bottom actions
+                      Container(
+                        padding: EdgeInsets.all(Insets.lg),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surface,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, -2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextBtn(
+                                'Cancel',
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
+                            HSpace.med,
+                            Expanded(
+                              flex: 2,
+                              child: PrimaryBtn(
+                                onPressed: () {
+                                  final updatedProfile = profile.copyWith(
+                                    secondarySkills: tempSecondarySkills,
+                                  );
+                                  context.read<ProfileBloc>().add(
+                                    UpdateProfile(profile: updatedProfile),
+                                  );
+                                  Navigator.pop(context);
+                                },
+                                label: 'Apply',
+                                icon: Ionicons.checkmark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
         ),
-      );
-      return;
-    }
-
-    final updatedProfile = widget.profile.copyWith(
-      firstName: _firstNameController.text.trim(),
-      lastName: _lastNameController.text.trim(),
-      email: _emailController.text.trim().isEmpty
-          ? null
-          : _emailController.text.trim(),
-      phoneNumber: _phoneController.text.trim().isEmpty
-          ? null
-          : _phoneController.text.trim(),
+      ),
     );
-
-    // Only update if changes were made
-    if (updatedProfile.firstName != widget.profile.firstName ||
-        updatedProfile.lastName != widget.profile.lastName ||
-        updatedProfile.email != widget.profile.email ||
-        updatedProfile.phoneNumber != widget.profile.phoneNumber) {
-      context.read<ProfileBloc>().add(UpdateProfile(profile: updatedProfile));
-    }
   }
 
   void _showMoreOptions(BuildContext context) {
@@ -153,9 +432,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       builder: (context) {
         final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
         return Container(
-          margin: EdgeInsets.symmetric(horizontal: Insets.lg).copyWith(
-            bottom: bottomPadding + Insets.med,
-          ), // Add dynamic bottom padding
+          margin: EdgeInsets.symmetric(
+            horizontal: Insets.lg,
+          ).copyWith(bottom: bottomPadding + Insets.med),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: const BorderRadius.all(Radius.circular(24)),
@@ -297,6 +576,76 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
+  Widget _buildInteractableSection({
+    required BuildContext context,
+    required String title,
+    required Widget content,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: Corners.medBorder,
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(Insets.lg),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFCF7F2),
+            borderRadius: Corners.medBorder,
+            border: Border.all(
+              color: colorScheme.outline.withValues(alpha: .1),
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyles.titleSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    // VSpace.sm,
+                    content,
+                  ],
+                ),
+              ),
+              HSpace.med,
+              Icon(
+                Ionicons.chevron_forward,
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
+                size: IconSizes.sm,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[date.month - 1]} ${date.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -305,13 +654,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: UiText(text: 'Edit Profile', style: TextStyles.titleLarge),
+        title: UiText(text: 'Account Info', style: TextStyles.titleLarge),
         centerTitle: true,
         backgroundColor: colorScheme.surface,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Ionicons.close, color: colorScheme.onSurface),
-          onPressed: () => Navigator.pop(context),
+        leading: Center(
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: const BoxDecoration(
+              color: Color(0xFFFCF7F2),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(
+                Ionicons.close,
+                color: colorScheme.onSurface,
+                size: 20,
+              ),
+              padding: EdgeInsets.zero,
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
         ),
         actions: [
           IconButton(
@@ -331,8 +695,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: Stack(
                 children: [
                   Container(
-                    width: 100,
-                    height: 100,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: colorScheme.primaryContainer,
@@ -355,7 +719,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     bottom: 0,
                     right: 0,
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color: colorScheme.primary,
                         shape: BoxShape.circle,
@@ -365,7 +729,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ),
                       ),
                       child: const Icon(
-                        Ionicons.camera,
+                        Icons.add,
                         size: 16,
                         color: Colors.white,
                       ),
@@ -441,41 +805,94 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             VSpace.xl,
 
             // Fields
-            StyledTextInput(
-              controller: _firstNameController,
-              label: 'First Name',
-              hintText: 'Enter your first name',
-              focusNode: _firstNameFocus,
-              enabled: !_isOffline,
+            _buildInteractableSection(
+              context: context,
+              title: 'Names',
+              content: Text(
+                '${widget.profile.firstName} ${widget.profile.lastName}',
+                style: TextStyles.bodyMedium.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  height: 1.5,
+                ),
+              ),
+              onTap: () =>
+                  context.pushNamed('editNames', extra: widget.profile),
             ),
             VSpace.med,
-            StyledTextInput(
-              controller: _lastNameController,
-              label: 'Last Name',
-              hintText: 'Enter your last name',
-              focusNode: _lastNameFocus,
-              enabled: !_isOffline,
+            _buildInteractableSection(
+              context: context,
+              title: 'Contacts',
+              content: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  UiText(
+                    text: widget.profile.email ?? 'No email',
+                    style: TextStyles.bodyMedium.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                      height: 1.5,
+                    ),
+                  ),
+                  if (widget.profile.phoneNumber != null) ...[
+                    VSpace.xs,
+                    UiText(
+                      text: widget.profile.phoneNumber!,
+                      style: TextStyles.bodyMedium.copyWith(
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              onTap: () =>
+                  context.pushNamed('editContacts', extra: widget.profile),
             ),
-            VSpace.xl,
 
-            StyledTextInput(
-              controller: _emailController,
-              label: 'Email Address',
-              hintText: 'Enter your email',
-              keyboardType: TextInputType.emailAddress,
-              focusNode: _emailFocus,
-              enabled: !_isOffline,
-            ),
+            if (widget.profile.userType == 'hustler') ...[
+              VSpace.med,
+              _buildInteractableSection(
+                context: context,
+                title: 'Primary Skills',
+                onTap: () =>
+                    _showPrimarySkillsBottomSheet(context, widget.profile),
+                content: Text(
+                  widget.profile.primarySkills.isEmpty
+                      ? 'Add primary skills'
+                      : widget.profile.primarySkills.join(', '),
+                  style: TextStyles.bodyMedium.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              VSpace.med,
+              _buildInteractableSection(
+                context: context,
+                title: 'Additional Skills',
+                onTap: () =>
+                    _showSecondarySkillsBottomSheet(context, widget.profile),
+                content: Text(
+                  widget.profile.secondarySkills.isEmpty
+                      ? 'Add secondary skills'
+                      : widget.profile.secondarySkills.join(', '),
+                  style: TextStyles.bodyMedium.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
             VSpace.med,
-            StyledTextInput(
-              controller: _phoneController,
-              label: 'Phone Number',
-              hintText: 'Enter your phone number',
-              keyboardType: TextInputType.phone,
-              focusNode: _phoneFocus,
-              enabled: !_isOffline,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Member since ${_formatDate(widget.profile.createdAt)}',
+                  style: TextStyles.bodySmall.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: .5),
+                  ),
+                ),
+              ],
             ),
-
             if (_isOffline)
               Padding(
                 padding: EdgeInsets.only(top: Insets.lg),
@@ -490,8 +907,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       Icon(Icons.wifi_off, color: colorScheme.error),
                       HSpace.med,
                       Expanded(
-                        child: UiText(
-                          text: 'You are offline. Editing is disabled.',
+                        child: Text(
+                          'You are offline. Editing is disabled.',
                           style: TextStyles.bodyMedium.copyWith(
                             color: colorScheme.error,
                           ),
@@ -501,6 +918,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 ),
               ),
+
+            VSpace.xxl, // Extra padding at bottom
           ],
         ),
       ),

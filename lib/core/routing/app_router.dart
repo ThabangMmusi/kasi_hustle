@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kasi_hustle/core/services/user_profile_service.dart';
 import 'package:kasi_hustle/features/auth/bloc/app_bloc.dart';
@@ -12,7 +13,14 @@ import 'package:kasi_hustle/features/home/presentation/screens/home_screen.dart'
 import 'package:kasi_hustle/features/search/presentation/screens/search_screen.dart';
 import 'package:kasi_hustle/features/applications/presentation/screens/applications_screen.dart';
 import 'package:kasi_hustle/features/applications/presentation/screens/my_applicion_screen.dart';
+import 'package:kasi_hustle/features/profile/domain/models/user_profile.dart';
+import 'package:kasi_hustle/features/profile/presentation/bloc/profile_bloc.dart';
+import 'package:kasi_hustle/features/profile/presentation/bloc/profile_event.dart';
 import 'package:kasi_hustle/features/profile/presentation/screens/profile_screen.dart';
+import 'package:kasi_hustle/features/profile/presentation/screens/edit_names_screen.dart';
+import 'package:kasi_hustle/features/profile/presentation/screens/edit_contacts_screen.dart';
+import 'package:kasi_hustle/features/wallet/presentation/screens/wallet_screen.dart';
+import 'package:kasi_hustle/features/wallet/presentation/screens/edit_bank_details_screen.dart';
 import 'package:kasi_hustle/features/menu/presentation/screens/menu_screen.dart';
 import 'package:kasi_hustle/features/settings/presentation/screens/settings_screen.dart';
 import 'package:kasi_hustle/features/business_home/presentation/screens/business_home_screen.dart';
@@ -35,6 +43,8 @@ class AppRoutes {
   static const profile = '/profile';
   static const menu = '/menu';
   static const settings = '/settings';
+  static const editNames = '/edit-names';
+  static const editContacts = '/edit-contacts';
 
   // Business routes
   static const businessHome = '/business';
@@ -197,11 +207,52 @@ GoRouter createAppRouter(AppBloc appBloc) {
         builder: (context, state) => const VerificationScreen(),
       ),
 
-      GoRoute(
-        path: AppRoutes.profile,
-        name: 'profile',
+      ShellRoute(
         parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const ProfileScreen(),
+        builder: (context, state, child) => BlocProvider(
+          create: (context) =>
+              ProfileBloc(userProfileService: UserProfileService())
+                ..add(LoadProfile()),
+          child: child,
+        ),
+        routes: [
+          GoRoute(
+            path: AppRoutes.profile,
+            name: 'profile',
+            builder: (context, state) => const ProfileScreen(),
+            routes: [
+              GoRoute(
+                path: 'edit-names',
+                name: 'editNames',
+                builder: (context, state) {
+                  final profile = state.extra as UserProfile;
+                  return EditNamesScreen(profile: profile);
+                },
+              ),
+              GoRoute(
+                path: 'edit-contacts',
+                name: 'editContacts',
+                builder: (context, state) {
+                  final profile = state.extra as UserProfile;
+                  return EditContactsScreen(profile: profile);
+                },
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/wallet',
+            name: 'wallet',
+            builder: (context, state) => const WalletScreen(),
+          ),
+          GoRoute(
+            path: '/edit-bank-details',
+            name: 'editBankDetails',
+            builder: (context, state) {
+              final profile = state.extra as UserProfile;
+              return EditBankDetailsScreen(profile: profile);
+            },
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.settings,
@@ -287,8 +338,20 @@ GoRouter createAppRouter(AppBloc appBloc) {
               GoRoute(
                 path: AppRoutes.menu,
                 name: 'menu',
-                pageBuilder: (context, state) =>
-                    const NoTransitionPage(child: MenuScreen()),
+                pageBuilder: (context, state) => CustomTransitionPage(
+                  key: state.pageKey,
+                  child: const MenuScreen(),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                        return SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 1),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        );
+                      },
+                ),
               ),
             ],
           ),

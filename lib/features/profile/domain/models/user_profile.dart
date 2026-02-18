@@ -5,7 +5,7 @@ class UserProfile {
 
   final List<String> primarySkills;
   final List<String> secondarySkills;
-  final String? bio;
+
   final String? profileImage;
   final double rating;
   final int totalReviews;
@@ -19,6 +19,13 @@ class UserProfile {
   final double? latitude;
   final double? longitude;
 
+  // Bank Details
+  final String? bankName;
+  final String? accountNumber;
+  final String? accountType;
+  final String? branchCode;
+  final String? accountHolder;
+
   UserProfile({
     required this.id,
     required this.firstName,
@@ -27,7 +34,7 @@ class UserProfile {
     this.phoneNumber,
     this.primarySkills = const [],
     this.secondarySkills = const [],
-    this.bio,
+
     this.profileImage,
     required this.rating,
     required this.totalReviews,
@@ -38,6 +45,11 @@ class UserProfile {
     this.locationName,
     this.latitude,
     this.longitude,
+    this.bankName,
+    this.accountNumber,
+    this.accountType,
+    this.branchCode,
+    this.accountHolder,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -50,7 +62,7 @@ class UserProfile {
       phoneNumber: json['phone_number'],
       primarySkills: List<String>.from(json['primary_skills'] ?? []),
       secondarySkills: List<String>.from(json['secondary_skills'] ?? []),
-      bio: json['bio'],
+
       profileImage: json['profile_image'],
       rating: json['rating']?.toDouble() ?? 0.0,
       totalReviews: json['total_reviews'] ?? 0,
@@ -63,6 +75,11 @@ class UserProfile {
       locationName: json['location_name'],
       latitude: json['latitude']?.toDouble(),
       longitude: json['longitude']?.toDouble(),
+      bankName: json['bank_name'],
+      accountNumber: json['account_number'],
+      accountType: json['account_type'],
+      branchCode: json['branch_code'],
+      accountHolder: json['account_holder'],
     );
   }
 
@@ -71,11 +88,12 @@ class UserProfile {
       'id': id,
       'first_name': firstName,
       'last_name': lastName,
+
       // 'email': email, // Don't save email to profiles table if it's auth-only, but keeping it in model
       'phone_number': phoneNumber,
       'primary_skills': primarySkills,
       'secondary_skills': secondarySkills,
-      'bio': bio,
+
       'profile_image': profileImage,
       'rating': rating,
       'total_reviews': totalReviews,
@@ -86,6 +104,11 @@ class UserProfile {
       'location_name': locationName,
       'latitude': latitude,
       'longitude': longitude,
+      'bank_name': bankName,
+      'account_number': accountNumber,
+      'account_type': accountType,
+      'branch_code': branchCode,
+      'account_holder': accountHolder,
     };
   }
 
@@ -96,11 +119,16 @@ class UserProfile {
     String? phoneNumber,
     List<String>? primarySkills,
     List<String>? secondarySkills,
-    String? bio,
+
     String? profileImage,
     String? locationName,
     double? latitude,
     double? longitude,
+    String? bankName,
+    String? accountNumber,
+    String? accountType,
+    String? branchCode,
+    String? accountHolder,
   }) {
     return UserProfile(
       id: id,
@@ -110,7 +138,7 @@ class UserProfile {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       primarySkills: primarySkills ?? this.primarySkills,
       secondarySkills: secondarySkills ?? this.secondarySkills,
-      bio: bio ?? this.bio,
+
       profileImage: profileImage ?? this.profileImage,
       rating: rating,
       totalReviews: totalReviews,
@@ -121,6 +149,11 @@ class UserProfile {
       locationName: locationName ?? this.locationName,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      bankName: bankName ?? this.bankName,
+      accountNumber: accountNumber ?? this.accountNumber,
+      accountType: accountType ?? this.accountType,
+      branchCode: branchCode ?? this.branchCode,
+      accountHolder: accountHolder ?? this.accountHolder,
     );
   }
 }

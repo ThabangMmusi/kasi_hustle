@@ -52,7 +52,7 @@ class StandardMenuItem extends StatelessWidget {
           : null,
       trailing: effectiveTrailing,
       onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(horizontal: Insets.lg),
+      contentPadding: EdgeInsets.symmetric(horizontal: Insets.xl),
     );
   }
 }

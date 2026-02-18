@@ -31,6 +31,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<RefreshHomeData>(_onRefreshHomeData);
     on<SearchJobsEvent>(_onSearchJobs);
     on<FilterBySkill>(_onFilterBySkill);
+    on<LoadMoreJobs>(_onLoadMoreJobs);
     on<SubmitJobApplication>(_onSubmitJobApplication);
   }
 
@@ -41,7 +42,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     emit(HomeLoading());
     try {
       final user = await getUserProfile();
-      final allJobs = await getJobs();
+      final allJobs = await getJobs(page: 0, limit: 10);
       final recommended = getRecommendedJobs(allJobs, user.primarySkills);
 
       emit(
@@ -50,6 +51,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           allJobs: allJobs,
           recommendedJobs: recommended,
           displayedJobs: allJobs,
+          hasReachedMax: allJobs.length < 10,
         ),
       );
     } catch (e) {
@@ -64,7 +66,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     if (state is HomeLoaded) {
       final currentState = state as HomeLoaded;
       try {
-        final allJobs = await getJobs();
+        final allJobs = await getJobs(page: 0, limit: 10);
         final recommended = getRecommendedJobs(
           allJobs,
           currentState.user.primarySkills,
@@ -75,10 +77,60 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             allJobs: allJobs,
             recommendedJobs: recommended,
             displayedJobs: allJobs,
+            hasReachedMax: allJobs.length < 10,
           ),
         );
       } catch (e) {
         // Keep current state on error
+      }
+    }
+  }
+
+  Future<void> _onLoadMoreJobs(
+    LoadMoreJobs event,
+    Emitter<HomeState> emit,
+  ) async {
+    if (state is HomeLoaded) {
+      final currentState = state as HomeLoaded;
+      if (currentState.hasReachedMax) return;
+
+      try {
+        final currentJobCount = currentState.allJobs.length;
+        final nextPage = (currentJobCount / 10).floor();
+
+        final newJobs = await getJobs(page: nextPage, limit: 10);
+
+        if (newJobs.isEmpty) {
+          emit(currentState.copyWith(hasReachedMax: true));
+        } else {
+          final updatedAllJobs = List<Job>.from(currentState.allJobs)
+            ..addAll(newJobs);
+
+          // If we have a filter, we might need to re-apply it or fetch more until we satisfy filter
+          // For simplicity, we just append to allJobs.
+          // If displayedJobs depends on filter, we should ideally re-run search/filter
+          // on the *entire* list or just append if there's no filter.
+
+          List<Job> updatedDisplayedJobs;
+          if (currentState.selectedSkillFilter != null) {
+            updatedDisplayedJobs = filterJobsBySkill(
+              updatedAllJobs,
+              currentState.selectedSkillFilter!,
+            );
+          } else {
+            updatedDisplayedJobs = updatedAllJobs;
+          }
+
+          emit(
+            currentState.copyWith(
+              allJobs: updatedAllJobs,
+              displayedJobs: updatedDisplayedJobs,
+              hasReachedMax: newJobs.length < 10,
+            ),
+          );
+        }
+      } catch (e) {
+        // Ignore error for load more, just don't update
       }
     }
   }

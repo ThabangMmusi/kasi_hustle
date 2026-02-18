@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
+import 'package:kasi_hustle/core/data/datasources/job_data_source.dart';
 import 'package:kasi_hustle/core/routing/app_router.dart';
 import 'package:kasi_hustle/core/services/map_cache_service.dart';
 import 'package:kasi_hustle/core/theme/app_theme.dart';
@@ -13,6 +14,10 @@ import 'package:kasi_hustle/core/services/user_profile_service.dart';
 import 'package:kasi_hustle/features/auth/bloc/app_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:kasi_hustle/core/services/connectivity_service.dart';
+import 'package:kasi_hustle/core/bloc/theme/theme_bloc.dart';
+import 'package:kasi_hustle/core/bloc/theme/theme_event.dart';
+import 'package:kasi_hustle/core/bloc/theme/theme_state.dart';
+import 'package:kasi_hustle/core/services/theme_service.dart';
 import 'package:kasi_hustle/core/bloc/network/network_bloc.dart';
 
 void main() async {
@@ -110,17 +115,30 @@ class MyApp extends StatelessWidget {
           create: (context) =>
               AppBloc(userProfileService: UserProfileService()),
         ),
+        BlocProvider(
+          create: (context) =>
+              ThemeBloc(themeService: ThemeService())..add(LoadTheme()),
+        ),
+        RepositoryProvider<JobDataSource>(
+          create: (context) => JobDataSourceImpl(Supabase.instance.client),
+        ),
       ],
       child: Builder(
         builder: (context) {
           // Get the AppBloc to use in router
           final appBloc = context.read<AppBloc>();
 
-          return MaterialApp.router(
-            title: 'Kasi Hustle',
-            theme: KasiTheme.lightTheme(),
-            routerConfig: createAppRouter(appBloc),
-            debugShowCheckedModeBanner: false,
+          return BlocBuilder<ThemeBloc, ThemeState>(
+            builder: (context, themeState) {
+              return MaterialApp.router(
+                title: 'Kasi Hustle',
+                theme: KasiTheme.lightTheme(),
+                darkTheme: KasiTheme.darkTheme(),
+                themeMode: themeState.themeMode,
+                routerConfig: createAppRouter(appBloc),
+                debugShowCheckedModeBanner: false,
+              );
+            },
           );
         },
       ),

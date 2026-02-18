@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:kasi_hustle/core/data/datasources/job_data_source.dart';
-import 'package:kasi_hustle/features/home/bloc/home_bloc.dart';
+import 'package:kasi_hustle/features/home/presentation/bloc/home/home_bloc.dart';
 import 'package:kasi_hustle/features/home/data/datasources/home_local_data_source.dart';
 import 'package:kasi_hustle/features/home/data/repositories/home_repository_impl.dart';
 import 'package:kasi_hustle/features/home/domain/models/job.dart';
@@ -17,7 +17,7 @@ import 'package:kasi_hustle/features/home/presentation/bloc/map/home_map_bloc.da
 import 'package:kasi_hustle/features/home/presentation/bloc/map/home_map_event.dart';
 import 'package:kasi_hustle/features/home/presentation/widgets/home_map_view.dart';
 import 'package:kasi_hustle/features/home/presentation/widgets/home_simple_bottom_sheet.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:kasi_hustle/features/home/presentation/widgets/home_status_bar_gradient.dart';
 
 // ==================== HOME SCREEN ====================
 
@@ -27,30 +27,34 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Shared data source
-    final jobDataSource = JobDataSourceImpl(Supabase.instance.client);
-    final localDataSource = HomeLocalDataSourceImpl(jobDataSource);
-    final repository = HomeRepositoryImpl(localDataSource);
-
-    // Domain usecases
-    final getUserProfile = makeGetUserProfile(repository);
-    final getJobs = makeGetJobs(repository);
-    final getRecommendedJobs = makeGetRecommendedJobs(repository);
-    final searchJobs = makeSearchJobs(repository);
-    final filterJobsBySkill = makeFilterJobsBySkill(repository);
-    final submitApplicationUseCase = SubmitApplicationUseCase(repository);
-
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => HomeBloc(
-            getUserProfile: getUserProfile,
-            getJobs: getJobs,
-            getRecommendedJobs: getRecommendedJobs,
-            searchJobs: searchJobs,
-            filterJobsBySkill: filterJobsBySkill,
-            submitApplicationUseCase: submitApplicationUseCase,
-          )..add(LoadHomeData()),
+          create: (context) {
+            // Create HomeRepository using the global JobDataSource
+            final jobDataSource = context.read<JobDataSource>();
+            final localDataSource = HomeLocalDataSourceImpl(jobDataSource);
+            final repository = HomeRepositoryImpl(localDataSource);
+
+            // Domain usecases
+            final getUserProfile = makeGetUserProfile(repository);
+            final getJobs = makeGetJobs(repository);
+            final getRecommendedJobs = makeGetRecommendedJobs(repository);
+            final searchJobs = makeSearchJobs(repository);
+            final filterJobsBySkill = makeFilterJobsBySkill(repository);
+            final submitApplicationUseCase = SubmitApplicationUseCase(
+              repository,
+            );
+
+            return HomeBloc(
+              getUserProfile: getUserProfile,
+              getJobs: getJobs,
+              getRecommendedJobs: getRecommendedJobs,
+              searchJobs: searchJobs,
+              filterJobsBySkill: filterJobsBySkill,
+              submitApplicationUseCase: submitApplicationUseCase,
+            )..add(LoadHomeData());
+          },
         ),
         BlocProvider(
           create: (context) => HomeMapBloc()..add(InitializeMap(context)),
@@ -72,13 +76,6 @@ class HomeScreenContent extends StatefulWidget {
 class _HomeScreenContentState extends State<HomeScreenContent> {
   @override
   Widget build(BuildContext context) {
-    // SystemChrome.setSystemUIOverlayStyle(
-    //   const SystemUiOverlayStyle(
-    //     statusBarColor: Colors.transparent,
-    //     statusBarIconBrightness: Brightness.dark,
-    //   ),
-    // );
-
     return Scaffold(
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
@@ -110,6 +107,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           children: [
             // 1. Google Map Background
             const HomeMapView(),
+
+            // Status Bar Gradient Shade
+            const HomeStatusBarGradient(),
 
             // 2. Simple Bottom Sheet (Top Layer)
             HomeSimpleBottomSheet(

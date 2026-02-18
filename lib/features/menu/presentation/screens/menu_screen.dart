@@ -27,68 +27,128 @@ class MenuScreen extends StatelessWidget {
           final user = state.user!;
 
           return Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               // User Header with top padding for status bar
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  Insets.lg,
-                  Insets.xxl + MediaQuery.of(context).padding.top,
-                  Insets.lg,
-                  Insets.lg,
-                ),
-                child: Row(
+              // VSpasce.med,
+              // Padding(
+              //   padding: EdgeInsets.symmetric(horizontal: Insets.lg),
+              //   child: Row(
+              //     children: [
+              //       Expanded(
+              //         child: _buildStatCard(
+              //           context: context,
+              //           icon: Ionicons.star,
+              //           value: user.rating.toStringAsFixed(1),
+              //           label: 'Rating',
+              //         ),
+              //       ),
+              //       HSpace.med,
+              //       Expanded(
+              //         child: _buildStatCard(
+              //           context: context,
+              //           icon: Ionicons.chatbox_ellipses_outline,
+              //           value: '${user.totalReviews}',
+              //           label: 'Reviews',
+              //         ),
+              //       ),
+              //       // HSpace.med,
+              //       // Expanded(
+              //       //   child: _buildStatCard(
+              //       //     context: context,
+              //       //     icon: Ionicons.briefcase,
+              //       //     value: '${user.completedJobs}',
+              //       //     label: 'Jobs Done',
+              //       //   ),
+              //       // ),
+              //     ],
+              //   ),
+              // ),
+              // VSpace.xl,
+
+              // const Divider(),
+
+              // Menu Items
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.symmetric(vertical: Insets.med),
                   children: [
-                    // Avatar
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: colorScheme.primary,
-                          width: 2,
-                        ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        Insets.lg,
+                        Insets.xxl + MediaQuery.of(context).padding.top,
+                        Insets.lg,
+                        Insets.lg,
                       ),
-                      child: ClipOval(
-                        child: user.profileImage != null
-                            ? Image.network(
-                                user.profileImage!,
-                                fit: BoxFit.cover,
-                              )
-                            : Icon(
-                                Ionicons.person,
-                                size: 35,
-                                color: colorScheme.primary,
-                              ),
-                      ),
-                    ),
-                    HSpace.lg,
-                    Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          UiText(
-                            text: '${user.firstName} ${user.lastName}',
-                            style: TextStyles.titleLarge.copyWith(
-                              fontWeight: FontWeight.bold,
+                          // Avatar
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                            child: ClipOval(
+                              child: user.profileImage != null
+                                  ? Image.network(
+                                      user.profileImage!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Icon(
+                                      Ionicons.person,
+                                      size: 35,
+                                      color: colorScheme.primary,
+                                    ),
                             ),
                           ),
-                          VSpace.xs,
-                          Row(
+                          VSpace.med,
+                          Column(
                             children: [
-                              const Icon(
-                                Ionicons.star,
-                                size: 16,
-                                color: Colors.amber,
-                              ),
-                              HSpace.xs,
                               UiText(
-                                text:
-                                    '${user.rating.toStringAsFixed(1)} Rating',
-                                style: TextStyles.bodyMedium.copyWith(
-                                  color: colorScheme.onSurface.withValues(
-                                    alpha: 0.6,
+                                text: '${user.firstName} ${user.lastName}',
+                                style: TextStyles.titleLarge.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              VSpace.xs,
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: Insets.sm,
+                                  vertical: Insets.xs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.1,
                                   ),
+                                  borderRadius: Corners.lgBorder,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Ionicons.hammer,
+                                      size: 12,
+                                      color: colorScheme.primary,
+                                    ),
+
+                                    HSpace.xs,
+                                    UiText(
+                                      text: user.userType
+                                          .toLowerCase()
+                                          .capitalizeFirst(),
+                                      style: TextStyles.bodySmall.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: colorScheme.onSurface.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -96,141 +156,138 @@ class MenuScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-              VSpace.med,
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: Insets.lg),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatCard(
-                        context: context,
-                        icon: Ionicons.star,
-                        value: user.rating.toStringAsFixed(1),
-                        label: 'Rating',
-                      ),
-                    ),
-                    HSpace.med,
-                    Expanded(
-                      child: _buildStatCard(
-                        context: context,
-                        icon: Ionicons.chatbox_ellipses_outline,
-                        value: '${user.totalReviews}',
-                        label: 'Reviews',
-                      ),
-                    ),
-                    HSpace.med,
-                    Expanded(
-                      child: _buildStatCard(
-                        context: context,
-                        icon: Ionicons.briefcase,
-                        value: '${user.completedJobs}',
-                        label: 'Jobs Done',
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              VSpace.xl,
 
-              const Divider(),
-
-              // Menu Items
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.symmetric(vertical: Insets.med),
-                  children: [
-                    StandardMenuItem(
-                      icon: Ionicons.person_outline,
-                      label: 'Personal Information',
-                      showChevron: true,
-                      onTap: () {
-                        debugPrint('Navigating to Profile (Personal Info)...');
-                        context.pushNamed('profile');
-                      },
-                    ),
-                    StandardMenuItem(
-                      icon: Ionicons.card_outline,
-                      label: 'Payment Method',
-                      subtitle: 'Add bank details',
-                      showChevron: true,
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Payment Methods coming soon!'),
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: Insets.lg),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFCF7F2),
+                        borderRadius: Corners.medBorder,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          StandardMenuItem(
+                            icon: Ionicons.person_outline,
+                            label: 'Manage Account',
+                            showChevron: true,
+                            onTap: () {
+                              debugPrint(
+                                'Navigating to Profile (Personal Info)...',
+                              );
+                              context.pushNamed('profile');
+                            },
                           ),
-                        );
-                      },
+                          StandardMenuItem(
+                            icon: Ionicons.card_outline,
+                            label: 'Wallet',
+                            // subtitle: 'Add bank details',
+                            showChevron: true,
+                            onTap: () {
+                              context.pushNamed('wallet');
+                            },
+                          ),
+                          StandardMenuItem(
+                            icon: Ionicons.settings_outline,
+                            label: 'Settings',
+                            showChevron: true,
+                            onTap: () => context.push(AppRoutes.settings),
+                          ),
+                        ],
+                      ),
                     ),
-                    StandardMenuItem(
-                      icon: Ionicons.help_circle_outline,
-                      label: 'Support & Help',
-                      showChevron: true,
-                      onTap: () {},
+                    VSpace.lg,
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: Insets.lg),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFCF7F2),
+                        borderRadius: Corners.medBorder,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          StandardMenuItem(
+                            icon: Ionicons.help_circle_outline,
+                            label: 'Support & Help',
+                            showChevron: true,
+                            onTap: () {},
+                          ),
+
+                          StandardMenuItem(
+                            icon: Ionicons.information_circle_outline,
+                            label: 'About Kasi Hustle',
+                            showChevron: true,
+                            onTap: () {},
+                          ),
+                        ],
+                      ),
                     ),
-                    StandardMenuItem(
-                      icon: Ionicons.settings_outline,
-                      label: 'Settings',
-                      showChevron: true,
-                      onTap: () => context.push(AppRoutes.settings),
-                    ),
-                    StandardMenuItem(
-                      icon: Ionicons.information_circle_outline,
-                      label: 'About Kasi Hustle',
-                      showChevron: true,
-                      onTap: () {},
-                    ),
+                    VSpace.lg,
                     // Logout
-                    StandardMenuItem(
-                      icon: Ionicons.log_out_outline,
-                      label: 'Logout',
-                      textColor: Colors.red,
-                      iconColor: Colors.red,
-                      showChevron: true,
-                      onTap: () {
-                        context.read<AppBloc>().add(AppLogoutRequested());
-                      },
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: Insets.lg),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFCF7F2),
+                        borderRadius: Corners.medBorder,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          StandardMenuItem(
+                            icon: Ionicons.log_out_outline,
+                            label: 'Logout',
+                            textColor: Colors.red,
+                            iconColor: Colors.red,
+                            showChevron: true,
+                            onTap: () {
+                              context.read<AppBloc>().add(AppLogoutRequested());
+                            },
+                          ),
+                          // Switch Role
+                          Padding(
+                            padding: EdgeInsets.all(Insets.lg),
+                            child: Container(
+                              padding: EdgeInsets.all(Insets.med),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primaryContainer.withValues(
+                                  alpha: 0.3,
+                                ),
+                                borderRadius: Corners.medBorder,
+                              ),
+                              child: Column(
+                                children: [
+                                  UiText(
+                                    text: 'Looking to hire someone?',
+                                    style: TextStyles.bodyMedium,
+                                  ),
+                                  VSpace.med,
+                                  ElevatedButton(
+                                    onPressed: () {},
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: colorScheme.primary,
+                                      foregroundColor: colorScheme.onPrimary,
+                                      minimumSize: const Size(
+                                        double.infinity,
+                                        50,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: Corners.medBorder,
+                                      ),
+                                    ),
+                                    child: UiText(
+                                      text: 'Switch to Hirer',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
-                ),
-              ),
-              VSpace.xl,
-
-              // Switch Role
-              Padding(
-                padding: EdgeInsets.all(Insets.lg),
-                child: Container(
-                  padding: EdgeInsets.all(Insets.med),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                    borderRadius: Corners.medBorder,
-                  ),
-                  child: Column(
-                    children: [
-                      UiText(
-                        text: 'Looking to hire someone?',
-                        style: TextStyles.bodyMedium,
-                      ),
-                      VSpace.med,
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colorScheme.primary,
-                          foregroundColor: colorScheme.onPrimary,
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: Corners.medBorder,
-                          ),
-                        ),
-                        child: UiText(
-                          text: 'Switch to Hirer',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ],
@@ -255,15 +312,15 @@ class MenuScreen extends StatelessWidget {
         borderRadius: Corners.medBorder,
         border: Border.all(color: colorScheme.outline.withValues(alpha: .1)),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Icon(icon, color: colorScheme.primary, size: IconSizes.med),
-          VSpace.sm,
+          Icon(icon, color: colorScheme.primary, size: IconSizes.sm),
+          HSpace.sm,
           UiText(
             text: value,
             style: TextStyles.titleLarge.copyWith(fontWeight: FontWeight.bold),
           ),
-          VSpace.xs,
+          HSpace.xs,
           UiText(
             text: label,
             style: TextStyles.bodySmall.copyWith(
@@ -273,5 +330,12 @@ class MenuScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+extension on String {
+  String? capitalizeFirst() {
+    if (isEmpty) return this;
+    return this[0].toUpperCase() + substring(1);
   }
 }

@@ -8,10 +8,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// Shared data source for job-related data across all features
 /// This eliminates redundancy by centralizing job data management
 abstract class JobDataSource {
-  Future<List<Job>> getAllJobs();
+  Future<List<Job>> getAllJobs({int page = 0, int limit = 10});
   Future<List<Job>> getJobsByUser(String userId);
   Future<List<Job>> searchJobs(String query);
   Future<UserProfile> getUserProfile();
+  Future<void> applyForJob(String jobId, String userId);
 }
 
 class JobDataSourceImpl implements JobDataSource {
@@ -21,21 +22,28 @@ class JobDataSourceImpl implements JobDataSource {
   JobDataSourceImpl(this._supabaseClient);
 
   @override
-  Future<List<Job>> getAllJobs() async {
+  Future<List<Job>> getAllJobs({int page = 0, int limit = 10}) async {
     final prefs = await SharedPreferences.getInstance();
     try {
-      // 1. Try to fetch from network
+      // 1. Calculate range for pagination
+      final from = page * limit;
+      final to = from + limit - 1;
+
+      // 2. Try to fetch from network with pagination
       final response = await _supabaseClient
           .from('jobs')
           .select()
-          .order('created_at', ascending: false);
+          .order('created_at', ascending: false)
+          .range(from, to);
 
       final jobs = response.map((json) => Job.fromJson(json)).toList();
 
-      // 2. Cache top 20 jobs
-      final jobsToCache = jobs.take(20).toList();
-      final jobsJson = jobsToCache.map((job) => job.toJson()).toList();
-      await prefs.setString(_jobsCacheKey, jsonEncode(jobsJson));
+      // 3. Cache first page only (top 20 jobs) to keep startup fast
+      if (page == 0) {
+        final jobsToCache = jobs.take(20).toList();
+        final jobsJson = jobsToCache.map((job) => job.toJson()).toList();
+        await prefs.setString(_jobsCacheKey, jsonEncode(jobsJson));
+      }
 
       return jobs;
     } catch (e) {
@@ -97,5 +105,19 @@ class JobDataSourceImpl implements JobDataSource {
       createdAt: DateTime.now(),
       completedJobs: 0,
     );
+  }
+
+  @override
+  Future<void> applyForJob(String jobId, String userId) async {
+    try {
+      await _supabaseClient.from('applications').insert({
+        'job_id': jobId,
+        'user_id': userId,
+        'status': 'pending',
+        'applied_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e) {
+      throw Exception('Failed to submit application: $e');
+    }
   }
 }

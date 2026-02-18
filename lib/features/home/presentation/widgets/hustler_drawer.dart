@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:kasi_hustle/core/widgets/standard_menu_item.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
 import 'package:kasi_hustle/features/applications/presentation/screens/applications_screen.dart';
-import 'package:kasi_hustle/features/home/bloc/home_bloc.dart';
+import 'package:kasi_hustle/features/home/presentation/bloc/home/home_bloc.dart';
 import 'package:kasi_hustle/features/profile/presentation/screens/profile_screen.dart';
 
 class HustlerDrawer extends StatelessWidget {
@@ -183,15 +184,11 @@ class HustlerDrawer extends StatelessWidget {
                     children: [
                       StandardMenuItem(
                         icon: Ionicons.card_outline,
-                        label: 'Payment Method',
+                        label: 'Wallet',
                         subtitle: 'Add bank details',
                         onTap: () {
                           Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Payment Methods coming soon!'),
-                            ),
-                          );
+                          context.pushNamed('wallet');
                         },
                       ),
                       StandardMenuItem(

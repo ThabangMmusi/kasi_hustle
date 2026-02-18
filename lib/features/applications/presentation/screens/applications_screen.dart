@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:kasi_hustle/core/widgets/ui_text.dart';
-import 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart';
+import 'package:kasi_hustle/core/widgets/widgets.dart';
+import 'package:kasi_hustle/core/utils/ui_utils.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/repositories/application_repository_impl.dart';
 import '../../domain/models/application.dart';
@@ -97,7 +97,7 @@ class ApplicationsScreenContent extends StatelessWidget {
                         (app) => ApplicationCard(
                           application: app,
                           onWithdraw: () {
-                            _showWithdrawDialog(context, app.id);
+                            _showRejectBottomSheet(context, app.id);
                           },
                         ),
                       )
@@ -197,45 +197,82 @@ class ApplicationsScreenContent extends StatelessWidget {
     );
   }
 
-  void _showWithdrawDialog(BuildContext context, String applicationId) {
-    showDialog(
+  void _showRejectBottomSheet(BuildContext context, String applicationId) {
+    UiUtils.showGlobalBottomSheet(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A1A),
-        title: const Text(
-          'Reject Application',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'Are you sure you want to reject this application?',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white)),
+      useRootNavigator: true,
+      builder: (context) {
+        final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+        return Container(
+          margin: EdgeInsets.symmetric(
+            horizontal: Insets.lg,
+          ).copyWith(bottom: bottomPadding + Insets.med),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.all(Radius.circular(24)),
           ),
-          ElevatedButton(
-            onPressed: () {
-              context.read<ReceivedApplicationsBloc>().add(
-                RejectApplicationEvent(applicationId),
-              );
-              Navigator.pop(dialogContext);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Application rejected'),
-                  backgroundColor: Color(0xFFFFD700),
+          padding: EdgeInsets.all(Insets.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Handle bar
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Reject'),
+              ),
+              VSpace.lg,
+              UiText(
+                text: 'Reject Application',
+                style: TextStyles.headlineSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              VSpace.med,
+              UiText(
+                text: 'Are you sure you want to reject this application?',
+                style: TextStyles.bodyLarge.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              VSpace.xl,
+              PrimaryBtn(
+                label: 'Reject Application',
+                onPressed: () {
+                  context.read<ReceivedApplicationsBloc>().add(
+                    RejectApplicationEvent(applicationId),
+                  );
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Application rejected'),
+                      backgroundColor: Color(0xFFFFD700),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.error,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              VSpace.med,
+              TextBtn('Cancel', onPressed: () => Navigator.pop(context)),
+              VSpace.med,
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

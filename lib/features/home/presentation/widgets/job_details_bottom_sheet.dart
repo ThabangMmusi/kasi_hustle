@@ -6,7 +6,7 @@ import 'package:kasi_hustle/core/theme/app_theme.dart';
 import 'package:kasi_hustle/core/theme/styles.dart';
 import 'package:kasi_hustle/core/widgets/buttons/primary_btn.dart';
 import 'package:kasi_hustle/core/widgets/ui_text.dart';
-import 'package:kasi_hustle/features/home/bloc/home_bloc.dart';
+import 'package:kasi_hustle/features/home/presentation/bloc/home/home_bloc.dart';
 import 'package:kasi_hustle/features/home/domain/models/job.dart';
 
 class JobDetailsBottomSheet extends StatelessWidget {

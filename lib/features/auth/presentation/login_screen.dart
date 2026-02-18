@@ -65,7 +65,10 @@ class _LoginScreenContentState extends State<LoginScreenContent>
     // Bottom sheet slide animation - finishes at 600ms smooth
     _slideAnimation =
         Tween<Offset>(
-          begin: const Offset(0, 1), // Start below screen
+          begin: const Offset(
+            0,
+            1.5,
+          ), // Start further below screen to avoid peek
           end: Offset.zero, // End at normal position
         ).animate(
           CurvedAnimation(
@@ -93,134 +96,133 @@ class _LoginScreenContentState extends State<LoginScreenContent>
 
   @override
   Widget build(BuildContext context) {
-    // Ensure system bars match the app theme for this screen.
-    // final ThemeData theme = Theme.of(context);
-    // SystemChrome.setSystemUIOverlayStyle(
-    //   SystemUiOverlayStyle(
-    //     statusBarColor: Colors.transparent,
-    //     statusBarIconBrightness: theme.brightness == Brightness.dark
-    //         ? Brightness.light
-    //         : Brightness.dark,
-    //     systemNavigationBarColor: theme.colorScheme.surface,
-    //     systemNavigationBarIconBrightness: theme.brightness == Brightness.dark
-    //         ? Brightness.light
-    //         : Brightness.dark,
-    //   ),
-    // );
-    return Scaffold(
-      body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthUnauthenticated) {
-            // Trigger animation when user is confirmed unauthenticated
-            if (_animationController.status == AnimationStatus.dismissed) {
-              _animationController.forward();
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarContrastEnforced: false,
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false, // Ensure background stays put
+        body: BlocConsumer<AuthBloc, AuthState>(
+          listener: (context, state) {
+            if (state is AuthUnauthenticated) {
+              // Trigger animation when user is confirmed unauthenticated
+              if (_animationController.status == AnimationStatus.dismissed) {
+                _animationController.forward();
+              }
             }
-          }
 
-          if (state is AuthAuthenticated) {
-            // Navigation will happen, keep loading state visible
-            // The router redirect will handle the actual navigation
-            context.go(
-              AppRoutes.onboarding,
-              extra: {'firstName': state.firstName, 'lastName': state.lastName},
-            );
-          }
+            if (state is AuthAuthenticated) {
+              // Navigation will happen, keep loading state visible
+              // The router redirect will handle the actual navigation
+              context.go(
+                AppRoutes.onboarding,
+                extra: {
+                  'firstName': state.firstName,
+                  'lastName': state.lastName,
+                },
+              );
+            }
 
-          if (state is MagicLinkSent) {
-            MagicLinkDialog.show(context, state.email);
-          }
+            if (state is MagicLinkSent) {
+              MagicLinkDialog.show(context, state.email);
+            }
 
-          if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: UiText(text: state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          // Button loading listens to isLoggingIn property
-          final isLoading = state.isLoggingIn || (state is AuthAuthenticated);
-          // Show initial loading (centered spinner) only for app startup check
-          final isInitialLoading = state is AuthInitial;
-
-          return Stack(
-            children: [
-              // Background image with animation
-              LoginBackground(animation: _animationController),
-
-              // Content
-              SafeArea(
-                child: Column(
-                  children: [
-                    // Centered logo - expands/shrinks with animation
-                    AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        final flex = isInitialLoading
-                            ? 1.0
-                            : _expandAnimation.value;
-                        return Expanded(
-                          flex: (flex * 100).toInt(),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  'assets/images/kasi_hustle_logo.png',
-                                  width: 140,
-                                  fit: BoxFit.contain,
-                                ),
-                                if (isInitialLoading) ...[
-                                  VSpace.lg,
-                                  CircularProgressIndicator(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    // Bottom sheet with slide animation
-                    if (!isInitialLoading) ...[
-                      VSpace(Insets.xxxl * 4),
-
-                      SlideTransition(
-                        position: _slideAnimation,
-                        child: LoginBottomSheet(
-                          showEmailField: state.showEmailForm,
-                          child: state.showEmailForm
-                              ? EmailForm(
-                                  emailController: _emailController,
-                                  formKey: _formKey,
-                                  isLoading: isLoading,
-                                  onCancel: () {
-                                    context.read<AuthBloc>().add(
-                                      ToggleEmailFormEvent(false),
-                                    );
-                                    _emailController.clear();
-                                  },
-                                )
-                              : LoginOptions(
-                                  isLoading: isLoading,
-                                  onEmailPressed: () => context
-                                      .read<AuthBloc>()
-                                      .add(ToggleEmailFormEvent(true)),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ],
+            if (state is AuthError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: UiText(text: state.message),
+                  backgroundColor: Colors.red,
                 ),
-              ),
-            ],
-          );
-        },
+              );
+            }
+          },
+          builder: (context, state) {
+            // Button loading listens to isLoggingIn property
+            final isLoading = state.isLoggingIn || (state is AuthAuthenticated);
+            // Show initial loading (centered spinner) only for app startup check
+            final isInitialLoading = state is AuthInitial;
+
+            return Stack(
+              children: [
+                // Background image with animation
+                LoginBackground(animation: _animationController),
+
+                // Content
+                SafeArea(
+                  child: Column(
+                    children: [
+                      // Centered logo - expands/shrinks with animation
+                      AnimatedBuilder(
+                        animation: _animationController,
+                        builder: (context, child) {
+                          final flex = isInitialLoading
+                              ? 1.0
+                              : _expandAnimation.value;
+                          return Expanded(
+                            flex: (flex * 100).toInt(),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/kasi_hustle_logo.png',
+                                    width: 140,
+                                    fit: BoxFit.contain,
+                                  ),
+                                  if (isInitialLoading) ...[
+                                    VSpace.lg,
+                                    CircularProgressIndicator(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      // Bottom sheet with slide animation
+                      if (!isInitialLoading) ...[
+                        VSpace(Insets.xxxl * 4),
+
+                        SlideTransition(
+                          position: _slideAnimation,
+                          child: LoginBottomSheet(
+                            showEmailField: state.showEmailForm,
+                            child: state.showEmailForm
+                                ? EmailForm(
+                                    emailController: _emailController,
+                                    formKey: _formKey,
+                                    isLoading: isLoading,
+                                    onCancel: () {
+                                      context.read<AuthBloc>().add(
+                                        ToggleEmailFormEvent(false),
+                                      );
+                                      _emailController.clear();
+                                    },
+                                  )
+                                : LoginOptions(
+                                    isLoading: isLoading,
+                                    onEmailPressed: () => context
+                                        .read<AuthBloc>()
+                                        .add(ToggleEmailFormEvent(true)),
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
